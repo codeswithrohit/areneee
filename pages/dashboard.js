@@ -601,7 +601,7 @@ console.log("chefdata",cheforders)
   return (
     <div className='flex flex-col md:flex-row h-screen md:mt-6 mt-28'>
       <div className="bg-gray-800 text-white w-full md:w-64 flex-shrink-0">
-        <h1 className='text-white font-bold text-lg text-center py-4'>Dashboard</h1>
+        <h1 className='text-white font-bold text-lg text-center mb-4 mt-12'>Dashboard</h1>
         <ul className="flex flex-wrap md:flex-col md:flex-nowrap space-y-1 md:space-y-0 grid grid-cols-3 md:grid-cols-1 gap-4">
           <li
             className={`flex items-center pl-2 py-1 cursor-pointer transition-all ${activeTab === 'Profile' ? 'bg-white text-black font-bold ' : 'hover:bg-gray-700'}`}

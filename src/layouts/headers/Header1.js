@@ -329,7 +329,7 @@ const Header1 = () => {
                     </div>
                   </div>
             
-                  <div className="absolute right-0 z-30  w-64 bg-white rounded-md shadow-lg hidden group-hover:block">
+                  <div className="absolute -right-8 z-30  w-64 bg-white rounded-md shadow-lg hidden group-hover:block">
                     <ul>
                       <li className="border-b hover:bg-gray-100">
                         <Link href="#">
