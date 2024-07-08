@@ -73,6 +73,8 @@ const Test = () => {
     }
   };
 
+  console.log("userdata",userData)
+
   const handleLogout = async () => {
     const auth = getAuth();
     try {
@@ -139,9 +141,9 @@ const Test = () => {
       return booking.confirmation === 'false' ;
   }));
 
-  const ongoingOrders = bookings ? bookings.filter(booking => booking.availablethalli > 0 && booking.orderstatus === "Confirm") : [];
+  const ongoingOrders = bookings ? bookings.filter(booking => booking.availablethalli > 0 && booking.orderstatus === "Confirm" && booking.vendorid === currentUser.uid) : [];
   const currentDate = new Date().toISOString().split('T')[0];
-  const completedOrders = bookings ? bookings.filter(booking => booking.availablethalli === 0) : [];
+  const completedOrders = bookings ? bookings.filter(booking => booking.availablethalli === 0 && booking.vendorid === currentUser.uid) : [];
   const handleStatusChange = async (bookingId, deliveryIndex, newStatus) => {
     try {
       const bookingRef = firebase.firestore().collection('kitchenorder').doc(bookingId);
@@ -218,7 +220,7 @@ const Test = () => {
                                 Payment
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Booking Date
+                                Start Date
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
