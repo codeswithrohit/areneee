@@ -1,10 +1,10 @@
 {
-  "name": "areneservice",
+  "name": "areneservices",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start",
     "lint": "next lint"
   },
@@ -31,14 +31,17 @@
     "konsta": "^0.11.1",
     "moment": "^2.30.1",
     "mongoose": "^6.4.6",
+    "next": "12.1.0",
     "nodemailer": "^6.9.7",
     "nouislider-react": "^3.4.1",
     "otp-input-react": "^0.3.0",
     "paytmchecksum": "^1.5.0",
+    "react": "17.0.2",
     "react-bootstrap": "^1.6.1",
     "react-countup": "^6.1.1",
     "react-date-range": "^2.0.1",
     "react-datepicker": "^7.0.0",
+    "react-dom": "17.0.2",
     "react-google-autocomplete": "^2.7.3",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.12.0",
@@ -55,13 +58,11 @@
     "react-visibility-sensor": "^5.1.1",
     "twilio": "^4.20.0",
     "wowjs": "^1.1.3",
-    "xlsx": "^0.18.5",
-    "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.4"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5"
   }
 }
