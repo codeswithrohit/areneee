@@ -129,47 +129,88 @@ const [longitude, setLongitude] = useState(null);
 const [locations, setLocations] = useState(null);
 
 useEffect(() => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
+  let watchId;
+  let intervalId;
 
-        // Fetch location name using reverse geocoding
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.results && data.results.length > 0) {
-              // Extracting more specific address components
-              const addressComponents = data.results[0].address_components;
-              const cityName = addressComponents.find(component => component.types.includes('locality'));
-              const stateName = addressComponents.find(component => component.types.includes('administrative_area_level_1'));
-              const countryName = addressComponents.find(component => component.types.includes('country'));
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const newLatitude = position.coords.latitude;
+          const newLongitude = position.coords.longitude;
 
-              // Constructing a more detailed location name
-              const detailedLocation = [cityName, stateName, countryName]
-                .filter(component => component !== undefined)
-                .map(component => component.long_name)
-                .join(', ');
+          // Only update if the location has changed
+          if (latitude !== newLatitude || longitude !== newLongitude) {
+            setLatitude(newLatitude);
+            setLongitude(newLongitude);
 
-              setLocations(detailedLocation);
-            } else {
-              setLocations("Location not found");
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching location:', error);
-            setLocations("Error fetching location");
+            // Fetch location name using reverse geocoding
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${newLatitude},${newLongitude}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.results && data.results.length > 0) {
+                  const addressComponents = data.results[0].address_components;
+                  const cityName = addressComponents.find(component => component.types.includes('locality'));
+                  const stateName = addressComponents.find(component => component.types.includes('administrative_area_level_1'));
+                  const countryName = addressComponents.find(component => component.types.includes('country'));
+                  const detailedLocation = [cityName, stateName, countryName]
+                    .filter(component => component !== undefined)
+                    .map(component => component.long_name)
+                    .join(', ');
+                  setLocations(detailedLocation);
+                } else {
+                  setLocations("Location not found");
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching location:', error);
+                setLocations("Error fetching location");
+              });
+          }
+        },
+        (error) => {
+          console.error('Error getting geolocation:', error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      intervalId = setInterval(updateDeliveryboyLocation, 2000);
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const updateDeliveryboyLocation = async () => {
+    if (latitude && longitude && locations && userData) {
+      try {
+        const snapshot = await firebase.firestore().collection('kitchenorder')
+          .where('deliveryboyid', '==', user.uid)
+          .where('deliveryconfirmation', '==', true)
+          .get();
+        const batch = firebase.firestore().batch();
+        snapshot.forEach(doc => {
+          batch.update(doc.ref, {
+            deliveryboylocation: locations,
           });
-      },
-      (error) => {
-        console.error('Error getting geolocation:', error);
+        });
+        await batch.commit();
+      } catch (error) {
+        console.error('Error updating deliveryboylocation:', error);
       }
-    );
-  } else {
-    console.error('Geolocation is not supported by this browser.');
-  }
-}, []);
+    }
+  };
+
+  fetchLocation();
+
+  return () => {
+    if (watchId) {
+      navigator.geolocation.clearWatch(watchId);
+    }
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  };
+}, [latitude, longitude, locations, userData]);
 
 
 
