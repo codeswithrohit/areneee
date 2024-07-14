@@ -60,18 +60,51 @@ const test = () => {
       }
   };
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((authUser) => {
+      setLoading(true);
       if (authUser) {
-        setUser(authUser.uid);
+        setUser(authUser);
+        fetchUserData(authUser.uid);
       } else {
         setUser(null);
+        setUserData(null);
         setLoading(false);
+        router.push('/signin'); // Redirect to sign-in page
       }
     });
     return () => unsubscribe();
   }, []);
+  
+  const fetchUserData = async (uid) => {
+    console.log("uid", uid);
+    try {
+      const userDoc = await firebase.firestore().collection("Users").doc(uid).get();
+      console.log("userdoc", userDoc);
+      if (userDoc.exists) {
+        const fetchedUserData = userDoc.data();
+        console.log("fetchedata", fetchedUserData);
+        setUserData(fetchedUserData);
+        setFirstName(fetchedUserData.name || "");
+        setEmail(fetchedUserData.email || "");
+        setMobileNumber(fetchedUserData.mobileNumber || "");
+        setAddress(fetchedUserData.address || "");
+      } else {
+        console.log("userdata not found");
+        setUserData(null);
+        toast.error('User data not found, redirecting to sign-in page.');
+        router.push('/signin'); // Redirect to sign-in page if user data not found
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error('Error fetching user data, redirecting to sign-in page.');
+      router.push('/signin'); // Redirect to sign-in page on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const router = useRouter();
   const { service, selectedTenure, GarmentTypes, } = router.query;
@@ -120,7 +153,7 @@ const test = () => {
         availablegarments:GarmentTypesNOofGarment,
         Noofgarment:GarmentTypesNOofGarment,
         totalpayment: GarmentTypes && JSON.parse(GarmentTypes)[0]?.price,
-        Userid: user,
+        Userid: user.uid,
         OrderDate: currentDate,
         Payment: paymentAmount,
         oneday: oneday,
@@ -230,6 +263,19 @@ const test = () => {
 
   return (
     <div>
+         {loading ? (
+        <div className="flex justify-center items-center h-screen">
+          <button type="button"
+            className="px-6 py-2.5 rounded-full text-white text-sm tracking-wider font-semibold border-none outline-none bg-[#43d3b0] hover:bg-orange-700 active:bg-[#43d3b0]">
+            Loading
+            <svg xmlns="http://www.w3.org/2000/svg" width="18px" fill="#fff" className="ml-2 inline animate-spin" viewBox="0 0 24 24">
+              <path fillRule="evenodd"
+                d="M7.03 2.757a1 1 0 0 1 1.213-.727l4 1a1 1 0 0 1 .59 1.525l-2 3a1 1 0 0 1-1.665-1.11l.755-1.132a7.003 7.003 0 0 0-2.735 11.77 1 1 0 0 1-1.376 1.453A8.978 8.978 0 0 1 3 12a9 9 0 0 1 4.874-8l-.117-.03a1 1 0 0 1-.727-1.213zm10.092 3.017a1 1 0 0 1 1.376-1.453A8.978 8.978 0 0 1 21 12a9 9 0 0 1-4.874 8l.117.03a1 1 0 0 1 .727 1.213 1 1 0 0 1-1.213.727l-4-1a1 1 0 0 1-.59-1.525l2-3a1 1 0 0 1 1.665 1.11l-.755 1.132a7.003 7.003 0 0 0 2.735-11.77z"
+                clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      ) : (
       <div class="font-[sans-serif] bg-white mt-20 p-4">
       <div class="max-w-4xl mx-auto">
         <div class="text-center">
@@ -368,6 +414,7 @@ const test = () => {
         </div>
       </div>
     </div>
+      )}
     <ToastContainer/>
     </div>
   )

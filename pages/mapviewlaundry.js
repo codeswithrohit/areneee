@@ -6,14 +6,51 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Test = () => {
     const [bookingData, setBookingData] = useState(null);
-    const [VendorLocation, setVendorLocation] = useState(null);
     const [address, setAddress] = useState(null);
-    const [deliverylocation, setDeliveryLocation] = useState(null);
+    const [deliveryboylocation, setDeliveryboylocation] = useState({ latitude: null, longitude: null, address: '' });
     const [loading, setLoading] = useState(true);
+    const [distance, setDistance] = useState(null);
+    const [duration, setDuration] = useState(null);
     const router = useRouter();
     const { orderId } = router.query;
+    const mapRef = useRef(null);
+    const mapInstanceRef = useRef(null);
+    const directionsServiceRef = useRef(null);
+    const directionsRendererRef = useRef(null);
+    const deliveryMarkerRef = useRef(null);
+    const addressMarkerRef = useRef(null);
 
-    console.log("VendorLocation", VendorLocation, "address", address, "deliverylocation", deliverylocation);
+    const calculateAndDisplayRoute = (map, origin, destination) => {
+        if (!directionsServiceRef.current) {
+            directionsServiceRef.current = new window.google.maps.DirectionsService();
+        }
+        if (!directionsRendererRef.current) {
+            directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+            });
+        }
+
+        directionsServiceRef.current.route(
+            {
+                origin: origin,
+                destination: destination,
+                travelMode: 'DRIVING',
+            },
+            (response, status) => {
+                if (status === 'OK') {
+                    directionsRendererRef.current.setDirections(response);
+
+                    const route = response.routes[0];
+                    const leg = route.legs[0];
+                    setDistance(leg.distance.text);
+                    setDuration(leg.duration.text);
+                } else {
+                    console.error('Directions request failed due to ' + status);
+                }
+            }
+        );
+    };
 
     useEffect(() => {
         const fetchBookingDetails = async () => {
@@ -30,9 +67,8 @@ const Test = () => {
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     setBookingData(data);
-                    setVendorLocation(data.VendorLocation);
                     setAddress(data.address);
-                    setDeliveryLocation(data.deliveryboylocation);
+                    setDeliveryboylocation(data.deliveryboylocation);
                 });
 
                 setLoading(false);
@@ -47,150 +83,122 @@ const Test = () => {
         }
     }, [orderId]);
 
-    const [map, setMap] = useState(null);
-    const mapRef = useRef(null);
-
     useEffect(() => {
         const loadGoogleMapsScript = () => {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`;
-            script.async = true;
-            script.defer = true;
-            script.onload = initializeMap;
-            document.head.appendChild(script);
+            if (!window.google) {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ&libraries=places`;
+                script.async = true;
+                script.defer = true;
+                script.onload = initializeMap;
+                document.head.appendChild(script);
+            } else {
+                initializeMap();
+            }
         };
 
         const initializeMap = () => {
-            // Initialize Google Map
-            const mapInstance = new window.google.maps.Map(mapRef.current, {
-                center: { lat: 0, lng: 0 },
-                zoom: 12,
-            });
-            setMap(mapInstance);
+            if (deliveryboylocation && deliveryboylocation.latitude !== null && deliveryboylocation.longitude !== null) {
+                const { latitude, longitude, address: deliveryAddress } = deliveryboylocation;
 
-            // Fetch and add locations with different icons
-            fetchLocationAndAddMarker(mapInstance, address, "https://cdn-icons-png.freepik.com/256/5675/5675580.png?ga=GA1.1.626007579.1690598554&semt=ais_hybrid");
-            fetchLocationAndAddMarker(mapInstance, VendorLocation, "https://cdn-icons-png.freepik.com/256/9289/9289887.png?ga=GA1.1.626007579.1690598554&semt=ais_hybrid");
-            fetchLocationAndAddMarker(mapInstance, deliverylocation, "https://cdn-icons-png.freepik.com/256/1758/1758531.png?ga=GA1.1.626007579.1690598554&semt=ais_hybrid");
+                const mapInstance = new window.google.maps.Map(mapRef.current, {
+                    center: { lat: latitude, lng: longitude },
+                    zoom: 12,
+                });
+                mapInstanceRef.current = mapInstance;
 
-            // Show route between deliverylocation and address
-            showRoute(mapInstance, deliverylocation, address);
+                deliveryMarkerRef.current = new window.google.maps.Marker({
+                    position: { lat: latitude, lng: longitude },
+                    map: mapInstance,
+                    title: deliveryAddress || "Delivery Boy Location",
+                    icon: {
+                        path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 5,
+                        strokeColor: 'green',
+                        strokeWeight: 2,
+                        fillColor: 'green',
+                        fillOpacity: 1,
+                    },
+                });
+
+                if (address) {
+                    geocodeAddress(address, (geocodeResult) => {
+                        if (geocodeResult) {
+                            const { lat, lng } = geocodeResult.geometry.location;
+
+                            addressMarkerRef.current = new window.google.maps.Marker({
+                                position: { lat: lat(), lng: lng() },
+                                map: mapInstance,
+                                title: "Delivery Address",
+                            });
+
+                            calculateAndDisplayRoute(mapInstance, { lat: latitude, lng: longitude }, { lat: lat(), lng: lng() });
+                        }
+                    });
+                }
+            } else {
+                console.error('Delivery location coordinates are not available.');
+            }
         };
 
-        loadGoogleMapsScript();
-    }, [address, VendorLocation, deliverylocation]);
-
-    const fetchLocationAndAddMarker = (map, address, iconUrl) => {
-        if (!address) return;
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.results && data.results.length > 0) {
-                    const location = data.results[0].geometry.location;
-                    addMarker(map, location, iconUrl);
+        const geocodeAddress = (address, callback) => {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({ address: address }, (results, status) => {
+                if (status === 'OK') {
+                    callback(results[0]);
                 } else {
-                    console.error(`Geocode was not successful for the following reason: ${data.status}`);
+                    console.error('Geocode was not successful for the following reason:', status);
+                    callback(null);
                 }
-            })
-            .catch(error => console.error('Error fetching geocode:', error));
-    };
+            });
+        };
 
-    const addMarker = (map, location, iconUrl) => {
-        new window.google.maps.Marker({
-            position: location,
-            map,
-            icon: {
-                url: iconUrl,
-                scaledSize: new window.google.maps.Size(50, 50),
-            },
-        });
-    };
+        if (orderId && deliveryboylocation && deliveryboylocation.latitude !== null && deliveryboylocation.longitude !== null) {
+            loadGoogleMapsScript();
+        }
+    }, [address, deliveryboylocation, orderId]);
 
-    const showRoute = (map, originAddress, destinationAddress) => {
-        const directionsService = new window.google.maps.DirectionsService();
-        const directionsRenderer = new window.google.maps.DirectionsRenderer();
-        directionsRenderer.setMap(map);
-
-        const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({ address: originAddress }, (originResults, originStatus) => {
-            if (originStatus === window.google.maps.GeocoderStatus.OK) {
-                const origin = originResults[0].geometry.location;
-
-                geocoder.geocode({ address: destinationAddress }, (destResults, destStatus) => {
-                    if (destStatus === window.google.maps.GeocoderStatus.OK) {
-                        const destination = destResults[0].geometry.location;
-
-                        directionsService.route(
-                            {
-                                origin,
-                                destination,
-                                travelMode: window.google.maps.TravelMode.DRIVING,
-                            },
-                            (result, status) => {
-                                if (status === window.google.maps.DirectionsStatus.OK) {
-                                    directionsRenderer.setDirections(result);
-                                } else {
-                                    console.error(`Directions request failed due to ${status}`);
-                                }
-                            }
-                        );
-                    } else {
-                        console.error(`Geocode for destination was not successful for the following reason: ${destStatus}`);
-                    }
-                });
-            } else {
-                console.error(`Geocode for origin was not successful for the following reason: ${originStatus}`);
-            }
-        });
-    };
-
-    const updateLocationInFirebase = async () => {
-        try {
+    useEffect(() => {
+        if (orderId) {
             const db = firebase.firestore();
             const bookingRef = db.collection('laundryorders').where('orderId', '==', orderId);
-            const querySnapshot = await bookingRef.get();
+            
+            const unsubscribe = bookingRef.onSnapshot((snapshot) => {
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    setDeliveryboylocation(data.deliveryboylocation);
+                    
+                    if (mapInstanceRef.current && deliveryMarkerRef.current) {
+                        const { latitude, longitude } = data.deliveryboylocation;
+                        deliveryMarkerRef.current.setPosition({ lat: latitude, lng: longitude });
+                        mapInstanceRef.current.setCenter({ lat: latitude, lng: longitude });
 
-            if (querySnapshot.empty) {
-                toast.error('No matching documents found');
-                console.error('No matching documents found');
-                return;
-            }
-
-            querySnapshot.forEach(async (doc) => {
-                await doc.ref.update({ deliveryboylocation: deliverylocation });
+                        if (addressMarkerRef.current) {
+                            const addressPosition = addressMarkerRef.current.getPosition();
+                            calculateAndDisplayRoute(mapInstanceRef.current, { lat: latitude, lng: longitude }, { lat: addressPosition.lat(), lng: addressPosition.lng() });
+                        }
+                    }
+                });
             });
 
-            toast.success('Location updated in Firebase');
-        } catch (error) {
-            toast.error('Error updating location in Firebase');
-            console.error('Error updating location in Firebase:', error);
+            return () => unsubscribe();
         }
-    };
+    }, [orderId]);
 
     return (
-        <div className='min-h-screen bg-white mt-12'>
+        <div className='min-h-screen bg-white py-16' > 
+            <div ref={mapRef} style={{ height: '800px', width: '100%' }}></div>
             <div>
-                {loading ? (
-                    <div className="flex items-center justify-center h-screen">
-                        <div className="text-center mt-4">
-                            Loading...
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        {/* <div className="flex items-center justify-start gap-5">
-                            <button 
-                                onClick={updateLocationInFirebase} 
-                                className="lg:mt-0 lg:ml-4 px-4 py-2 w-32 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                            >
-                                Refresh Location
-                            </button>
-                        </div> */}
-                        <div ref={mapRef} style={{ width: '100%', height: '800px' }} />
-                    </>
-                )}
+            {distance && duration && (
+    <div className='fixed bottom-10 right-0 mt-4 mr-4 p-2 text-xs bg-white shadow-lg rounded-lg flex flex-col items-end space-y-1 font-bold text-green-600'>
+        <p>Delivery Boy At: {deliveryboylocation.address}</p>
+        <p>Distance: {distance}</p>
+        <p>Estimated Delivery Time: {duration}</p>
+    </div>
+)}
+
             </div>
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 };

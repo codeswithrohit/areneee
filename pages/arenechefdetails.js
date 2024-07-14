@@ -292,7 +292,7 @@ console.log(bookingData)
   {delivery.deliverystatus === "Out of Delivery" && (
                   <div>
                     <a href={`/mapview?orderId=${bookingData.orderId}`} className="text-green-500 rounded">
-                      View on Map
+                      Track Order
                     </a>
                   </div>
                 )}

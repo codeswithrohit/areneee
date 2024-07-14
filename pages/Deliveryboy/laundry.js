@@ -6,14 +6,26 @@ import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { FaBell, FaCheckCircle } from 'react-icons/fa';
+import { FaBell, FaCheckCircle,FaUser } from 'react-icons/fa';
 
 const Test = () => {
-  const [mainactiveTab, setMainActiveTab] = useState('orderAlert'); // State to track active tab
+  const [mainactiveTab, setMainActiveTab] = useState('Account'); // State to track active tab
   const [activeTab, setActiveTab] = useState("ongoingOrders");
   // Function to handle tab change
   const handleTabChange = (tab) => {
-    setMainActiveTab(tab);
+    if (userData?.verified || tab === 'Account') {
+      setMainActiveTab(tab);
+    } else {
+      toast.warn('Your verification is under process. After verification, you can use this service.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
 
 
@@ -64,10 +76,16 @@ const Test = () => {
               const userData = userDocSnap.data();
               if (userData && userData.isDeliveryboy) {
                   setUserData(userData);
-              } else {
+                  if (userData && userData.verified) {
+                    setMainActiveTab('orderAlert');
+                  } else {
+                    setMainActiveTab('Account');
+                  }
+                } else {
                   router.push('/Deliveryboy/loginregister');
-              }
+                }
           } else {
+            router.push('/Deliveryboy/loginregister');
               // Handle case where user data doesn't exist
           }
       } catch (error) {
@@ -102,8 +120,9 @@ const Test = () => {
         }
     };
     fetchBookings();
-}, [userData,currentUser]); // Add userData to the dependency array
-  useEffect(() => {
+}, [userData,currentUser]);
+
+console.log("laundrybookings",bookings)
     const fetchBookings = async () => {
         try {
             if (userData) {
@@ -117,59 +136,110 @@ const Test = () => {
             console.error('Error fetching bookings:', error);
         }
     };
-    fetchBookings();
-}, [userData,currentUser]); // Add userData to the dependency array
 
-  
-  console.log("orderslaundry",bookings)
-console.log("userdata",userData)
+    useEffect(() => {
+      if (userData) {
+        fetchBookings();
+        const interval = setInterval(() => {
+          fetchBookings();
+        }, 1000);
+        return () => clearInterval(interval);
+      }
+    }, [userData]);
 
 const [latitude, setLatitude] = useState(null);
 const [longitude, setLongitude] = useState(null);
 const [locations, setLocations] = useState(null);
 
 useEffect(() => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
+  let watchId;
+  let intervalId;
 
-        // Fetch location name using reverse geocoding
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.results && data.results.length > 0) {
-              // Extracting more specific address components
-              const addressComponents = data.results[0].address_components;
-              const cityName = addressComponents.find(component => component.types.includes('locality'));
-              const stateName = addressComponents.find(component => component.types.includes('administrative_area_level_1'));
-              const countryName = addressComponents.find(component => component.types.includes('country'));
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const newLatitude = position.coords.latitude;
+          const newLongitude = position.coords.longitude;
 
-              // Constructing a more detailed location name
-              const detailedLocation = [cityName, stateName, countryName]
-                .filter(component => component !== undefined)
-                .map(component => component.long_name)
-                .join(', ');
+          // Only update if the location has changed
+          if (latitude !== newLatitude || longitude !== newLongitude) {
+            setLatitude(newLatitude);
+            setLongitude(newLongitude);
 
-              setLocations(detailedLocation);
-            } else {
-              setLocations("Location not found");
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching location:', error);
-            setLocations("Error fetching location");
+            // Fetch location name using reverse geocoding
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${newLatitude},${newLongitude}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.results && data.results.length > 0) {
+                  const addressComponents = data.results[0].address_components;
+                  const cityName = addressComponents.find(component => component.types.includes('locality'));
+                  const stateName = addressComponents.find(component => component.types.includes('administrative_area_level_1'));
+                  const countryName = addressComponents.find(component => component.types.includes('country'));
+                  const detailedLocation = [cityName, stateName, countryName]
+                    .filter(component => component !== undefined)
+                    .map(component => component.long_name)
+                    .join(', ');
+                  setLocations(detailedLocation);
+                } else {
+                  setLocations("Location not found");
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching location:', error);
+                setLocations("Error fetching location");
+              });
+          }
+        },
+        (error) => {
+          console.error('Error getting geolocation:', error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      intervalId = setInterval(updateDeliveryboyLocation, 2000);
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const updateDeliveryboyLocation = async () => {
+    if (latitude && longitude && locations && userData) {
+      try {
+        const snapshot = await firebase.firestore().collection('laundryorders')
+          .where('deliveryboyid', '==', user.uid)
+          .where('deliveryconfirmation', '==', true)
+          .get();
+        const batch = firebase.firestore().batch();
+        snapshot.forEach(doc => {
+          batch.update(doc.ref, {
+            deliveryboylocation: {
+              latitude: latitude,
+              longitude: longitude,
+              address: locations, // Optionally, you can include the address
+            },
           });
-      },
-      (error) => {
-        console.error('Error getting geolocation:', error);
+        });
+        await batch.commit();
+      } catch (error) {
+        console.error('Error updating deliveryboylocation:', error);
       }
-    );
-  } else {
-    console.error('Geolocation is not supported by this browser.');
-  }
-}, []);
+    }
+  };
+  
+
+  fetchLocation();
+
+  return () => {
+    if (watchId) {
+      navigator.geolocation.clearWatch(watchId);
+    }
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  };
+}, [latitude, longitude, locations, userData]);
+
 
 
 
@@ -257,7 +327,11 @@ const completedOrders = bookings
           // Update the deliveryboylocation with current location
           await bookingRef.update({
             orderHistory: orderHistory,
-            deliveryboylocation: locations,
+            deliveryboylocation: {
+              latitude: latitude,
+              longitude: longitude,
+              address: locations, // Optionally, you can include the address
+            },
           });
           toast.success('Status updated to Out of Delivery');
         } else if (newStatus === "Delivered") {
@@ -291,7 +365,6 @@ const completedOrders = bookings
 
 
 
-if (userData && userData.verified) {
   return (
     <div>
     <section className="px-6 lg:py-4 py-4 font-mono">
@@ -302,21 +375,29 @@ if (userData && userData.verified) {
         ) : (
 <div>
 
-        <h1 className='text-red-600 text-center font-bold text-4xl'>Our Orders</h1>
-        <div className="flex mb-8">
+        
+<h1 className='text-red-600 text-center font-bold text-xl'>Arene Laundry Delivery Boy</h1>
+        <div className="fixed bottom-0 left-0 w-full  flex flex-row space-x-2 md:flex-row md:justify-around py-4 md:py-2">
       <button
-        className={`mr-4 px-4 py-2 flex items-center justify-center ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2  flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
         onClick={() => handleTabChange('orderAlert')}
       >
         <FaBell className="mr-2" />
-        Order Alert
+        <span className="">Order Alert</span>
       </button>
       <button
-        className={`px-4 py-2 flex items-center justify-center ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
         onClick={() => handleTabChange('confirmedOrders')}
       >
         <FaCheckCircle className="mr-2" />
-        Confirmed Orders
+        <span className="">Confirmed Orders</span>
+      </button>
+      <button
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'Account' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
+        onClick={() => handleTabChange('Account')}
+      >
+        <FaUser className="mr-2" />
+        <span className="">Account</span>
       </button>
     </div>
          {/* Data display based on active tab */}
@@ -627,6 +708,45 @@ if (userData && userData.verified) {
                   )}
                 </div>
               )}
+
+{mainactiveTab === 'Account' && (
+                <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-center">Account Details</h2>
+                <div className="flex justify-center items-center space-x-4">
+                {userData.aadharCardUrl && (
+                      <img
+                        src={userData.aadharCardUrl}
+                        alt="Aadhar Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md"
+                      />
+                    )}
+                    {userData.panCardUrl && (
+                      <img
+                        src={userData.panCardUrl}
+                        alt="Pan Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md mt-2"
+                      />
+                    )}
+                </div>
+                <div className="text-center">
+                  <p><strong>Name:</strong> {userData.name}</p>
+                  <p><strong>Address:</strong> {userData.address}</p>
+                  <p><strong>Delivery for:</strong> {userData.boyType}</p>
+                  <p><strong>Email:</strong> {userData.email}</p>
+                  <p><strong>Mobile Number:</strong> {userData.mobileNumber}</p>
+                  <p><strong>Pincode:</strong> {userData.pincode}</p>
+                  <p><strong>verification:</strong> {userData.verified ? 'You are verified ' : 'In Process'}</p>
+                </div>
+                <div className="text-center mt-4">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+              )}
     </div>
 
     
@@ -641,14 +761,7 @@ if (userData && userData.verified) {
     <ToastContainer />
 </div>
   );
-} else {
-  return (
-      <div className="flex justify-center items-center h-screen">
-          {/* Show a message if user data is not verified */}
-          <p>Your account verification is in process. Please wait.</p>
-      </div>
-  );
-}
+
 
 };
 

@@ -6,14 +6,26 @@ import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { FaBell, FaCheckCircle } from 'react-icons/fa';
+import { FaBell, FaCheckCircle, FaUser } from 'react-icons/fa';
 
 const Test = () => {
-  const [mainactiveTab, setMainActiveTab] = useState('orderAlert'); // State to track active tab
+  const [mainactiveTab, setMainActiveTab] = useState('Account'); // State to track active tab
   const [activeTab, setActiveTab] = useState("ongoingOrders");
   // Function to handle tab change
   const handleTabChange = (tab) => {
-    setMainActiveTab(tab);
+    if (userData?.verified || tab === 'Account') {
+      setMainActiveTab(tab);
+    } else {
+      toast.warn('Your verification is under process. After verification, you can use this service.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
 
 
@@ -54,34 +66,35 @@ const Test = () => {
   }, [user]);
 
   const fetchUserData = async (user) => {
-      try {
-          const userDocRef = firebase
-              .firestore()
-              .collection("Deliveryboy")
-              .doc(user.uid);
-          const userDocSnap = await userDocRef.get();
-          if (userDocSnap.exists) {
-              const userData = userDocSnap.data();
-              if (userData && userData.isDeliveryboy) {
-                  setUserData(userData);
-              } else {
-                  router.push('/Deliveryboy/loginregister');
-              }
-          } else {
-              // Handle case where user data doesn't exist
-          }
-      } catch (error) {
-          console.error('Error fetching user data:', error);
-      } finally {
-          setIsLoadingData(false); // Set loading state to false after fetching user data
+    try {
+      const userDocRef = firebase
+        .firestore()
+        .collection("Deliveryboy")
+        .doc(user.uid);
+      const userDocSnap = await userDocRef.get();
+      if (userDocSnap.exists) {
+        const userData = userDocSnap.data();
+        setUserData(userData);
+        if (userData && userData.verified) {
+          setMainActiveTab('orderAlert');
+        } else {
+          setMainActiveTab('Account');
+        }
+      } else {
+        router.push('/Deliveryboy/loginregister');
       }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setIsLoadingData(false); // Set loading state to false after fetching user data
+    }
   };
 
   const handleLogout = async () => {
       const auth = getAuth();
       try {
           await signOut(auth);
-          router.push('/Admin/Register');
+          router.push('/Deliveryboy/loginregister');
       } catch (error) {
           console.error('Error signing out:', error);
       }
@@ -103,26 +116,30 @@ const Test = () => {
     };
     fetchBookings();
 }, [userData,currentUser]); // Add userData to the dependency array
-  useEffect(() => {
-    const fetchBookings = async () => {
-        try {
-            if (userData) {
-                const snapshot = await firebase.firestore().collection('kitchenorder').where('pincode', '==', userData.pincode).where('deliveryconfirmation', '==', "false").get();
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                data.sort((a, b) => new Date(a.OrderDate) - new Date(b.OrderDate));
-                setDeliveryBookings(data);
-                setIsLoadingData(false); // Set loading state to false after fetching bookings
-            }
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-        }
-    };
+const fetchBookings = async () => {
+  try {
+      if (userData) {
+          const snapshot = await firebase.firestore().collection('kitchenorder').where('pincode', '==', userData.pincode).where('deliveryconfirmation', '==', "false").get();
+          const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          data.sort((a, b) => new Date(a.OrderDate) - new Date(b.OrderDate));
+          setDeliveryBookings(data);
+          setIsLoadingData(false); // Set loading state to false after fetching bookings
+      }
+  } catch (error) {
+      console.error('Error fetching bookings:', error);
+  }
+};
+useEffect(() => {
+  if (userData) {
     fetchBookings();
-}, [userData,currentUser]); // Add userData to the dependency array
-
+    const interval = setInterval(() => {
+      fetchBookings();
+    }, 1000);
+    return () => clearInterval(interval);
+  }
+}, [userData]);
   
-  console.log("orders",bookings)
-console.log("userdata",userData)
+
 
 const [latitude, setLatitude] = useState(null);
 const [longitude, setLongitude] = useState(null);
@@ -190,7 +207,11 @@ useEffect(() => {
         const batch = firebase.firestore().batch();
         snapshot.forEach(doc => {
           batch.update(doc.ref, {
-            deliveryboylocation: locations,
+            deliveryboylocation: {
+              latitude: latitude,
+              longitude: longitude,
+              address: locations, // Optionally, you can include the address
+            },
           });
         });
         await batch.commit();
@@ -199,6 +220,7 @@ useEffect(() => {
       }
     }
   };
+  
 
   fetchLocation();
 
@@ -293,7 +315,11 @@ const completedOrders = bookings
           // Update the deliveryboylocation with current location
           await bookingRef.update({
             Deliveryinfo: deliveryInfo,
-            deliveryboylocation: locations,
+            deliveryboylocation: {
+              latitude: latitude,
+              longitude: longitude,
+              address: locations, // Optionally, you can include the address
+            },
           });
           toast.success('Status updated to Out of Delivery');
         } else if (newStatus === "Delivered") {
@@ -325,7 +351,7 @@ const completedOrders = bookings
 
 
 
-if (userData && userData.verified) {
+
   return (
     <div>
     <section className="px-6 lg:py-4 py-4 font-mono">
@@ -336,21 +362,28 @@ if (userData && userData.verified) {
         ) : (
 <div>
 
-        <h1 className='text-red-600 text-center font-bold text-4xl'>Our Orders</h1>
-        <div className="flex mb-8">
+        <h1 className='text-red-600 text-center font-bold text-xl'>Arene Chef Delivery Boy</h1>
+        <div className="fixed bottom-0 left-0 w-full  flex flex-row space-x-2 md:flex-row md:justify-around py-4 md:py-2">
       <button
-        className={`mr-4 px-4 py-2 flex items-center justify-center ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2  flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
         onClick={() => handleTabChange('orderAlert')}
       >
         <FaBell className="mr-2" />
-        Order Alert
+        <span className="">Order Alert</span>
       </button>
       <button
-        className={`px-4 py-2 flex items-center justify-center ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
         onClick={() => handleTabChange('confirmedOrders')}
       >
         <FaCheckCircle className="mr-2" />
-        Confirmed Orders
+        <span className="">Confirmed Orders</span>
+      </button>
+      <button
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'Account' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
+        onClick={() => handleTabChange('Account')}
+      >
+        <FaUser className="mr-2" />
+        <span className="">Account</span>
       </button>
     </div>
          {/* Data display based on active tab */}
@@ -380,7 +413,7 @@ if (userData && userData.verified) {
                                     Payment
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Booking Date
+                                Start Delivery From
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
@@ -498,7 +531,7 @@ if (userData && userData.verified) {
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Food Name</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Details</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
+                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Delivery From</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                </tr>
                              </thead>
@@ -702,6 +735,49 @@ if (userData && userData.verified) {
                   )}
                 </div>
               )}
+
+
+
+{mainactiveTab === 'Account' && (
+                <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-center">Account Details</h2>
+                <div className="flex justify-center items-center space-x-4">
+                {userData.aadharCardUrl && (
+                      <img
+                        src={userData.aadharCardUrl}
+                        alt="Aadhar Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md"
+                      />
+                    )}
+                    {userData.panCardUrl && (
+                      <img
+                        src={userData.panCardUrl}
+                        alt="Pan Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md mt-2"
+                      />
+                    )}
+                </div>
+                <div className="text-center">
+                  <p><strong>Name:</strong> {userData.name}</p>
+                  <p><strong>Address:</strong> {userData.address}</p>
+                  <p><strong>Delivery for:</strong> {userData.boyType}</p>
+                  <p><strong>Email:</strong> {userData.email}</p>
+                  <p><strong>Mobile Number:</strong> {userData.mobileNumber}</p>
+                  <p><strong>Pincode:</strong> {userData.pincode}</p>
+                  <p><strong>verification:</strong> {userData.verified ? 'You are verified ' : 'In Process'}</p>
+                </div>
+                <div className="text-center mt-4">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+              )}
+
+
     </div>
 
     
@@ -716,14 +792,7 @@ if (userData && userData.verified) {
     <ToastContainer />
 </div>
   );
-} else {
-  return (
-      <div className="flex justify-center items-center h-screen">
-          {/* Show a message if user data is not verified */}
-          <p>Your account verification is in process. Please wait.</p>
-      </div>
-  );
-}
+
 
 };
 

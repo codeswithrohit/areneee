@@ -5,11 +5,27 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaBell, FaCheckCircle } from 'react-icons/fa';
+import { FaBell, FaCheckCircle,FaUser } from 'react-icons/fa';
 
 const Test = () => {
-  const [mainactiveTab, setMainActiveTab] = useState('orderAlert'); // State to track active tab
-  const [activeTab, setActiveTab] = useState("ongoingOrders"); // State to track sub-tab
+  const [mainactiveTab, setMainActiveTab] = useState('Account'); // State to track active tab
+  const [activeTab, setActiveTab] = useState("ongoingOrders");
+  // Function to handle tab change
+  const handleTabChange = (tab) => {
+    if (userData?.verified || tab === 'Account') {
+      setMainActiveTab(tab);
+    } else {
+      toast.warn('Your verification is under process. After verification, you can use this service.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
   const [user, setUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true); // Loading state for user authentication
   const [userData, setUserData] = useState(null);
@@ -24,9 +40,7 @@ const Test = () => {
 
   const router = useRouter();
   const currentUser = firebase.auth().currentUser;
-  const handleTabChange = (tab) => {
-    setMainActiveTab(tab);
-  };
+ 
   const getCurrentDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -60,10 +74,16 @@ const Test = () => {
         const userData = userDocSnap.data();
         if (userData && userData.isArenechef) {
           setUserData(userData);
+          if (userData && userData.verified) {
+            setMainActiveTab('orderAlert');
+          } else {
+            setMainActiveTab('Account');
+          }
         } else {
           router.push('/AreneChefVendor/loginregister');
         }
       } else {
+        router.push('/AreneChefVendor/loginregister');
         // Handle case where user data doesn't exist
       }
     } catch (error) {
@@ -79,28 +99,38 @@ const Test = () => {
     const auth = getAuth();
     try {
       await signOut(auth);
-      router.push('/Admin/Register');
+      router.push('/AreneChefVendor/loginregister');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        if (userData) {
-          const snapshot = await firebase.firestore().collection('kitchenorder').where('pincode', '==', userData.pincode).get();
-          const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          data.sort((a, b) => new Date(a.OrderDate) - new Date(b.OrderDate));
-          setBookings(data);
-          setIsLoadingData(false); // Set loading state to false after fetching bookings
-        }
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
+  const fetchBookings = async () => {
+    try {
+      if (userData) {
+        const snapshot = await firebase.firestore().collection('kitchenorder').where('pincode', '==', userData.pincode).get();
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => new Date(a.OrderDate) - new Date(b.OrderDate));
+        setBookings(data);
       }
-    };
-    fetchBookings();
-  }, [userData, currentUser]); // Add userData to the dependency array
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userData) {
+      fetchBookings();
+      const interval = setInterval(() => {
+        fetchBookings();
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [userData]);
+
+ 
 
   const handleConfirmOrder = async (bookingId) => {
     try {
@@ -177,23 +207,30 @@ const Test = () => {
           </div>
         ) : (
           <div>
-            <h1 className='text-red-600 text-center font-bold text-4xl'>Our Orders</h1>
-            <div className="flex mb-8">
-              <button
-                className={`mr-4 px-4 py-2 flex items-center justify-center ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-                onClick={() => handleTabChange('orderAlert')}
-              >
-                <FaBell className="mr-2" />
-                Order Alert
-              </button>
-              <button
-                className={`px-4 py-2 flex items-center justify-center ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-                onClick={() => handleTabChange('confirmedOrders')}
-              >
-                <FaCheckCircle className="mr-2" />
-                Confirmed Orders
-              </button>
-            </div>
+             <h1 className='text-red-600 text-center font-bold text-xl'>Arene Chef </h1>
+        <div className="fixed bottom-0 left-0 w-full  flex flex-row space-x-2 md:flex-row md:justify-around py-4 md:py-2">
+      <button
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2  flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'orderAlert' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
+        onClick={() => handleTabChange('orderAlert')}
+      >
+        <FaBell className="mr-2" />
+        <span className="">Order Alert</span>
+      </button>
+      <button
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'confirmedOrders' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
+        onClick={() => handleTabChange('confirmedOrders')}
+      >
+        <FaCheckCircle className="mr-2" />
+        <span className="">Confirmed Orders</span>
+      </button>
+      <button
+        className={`w-full md:w-auto flex-1 md:flex-initial px-4 py-2 flex items-center justify-center rounded-lg transform transition-transform duration-300 ${mainactiveTab === 'Account' ? 'bg-blue-500 text-white scale-105' : 'bg-gray-200 text-gray-800 hover:scale-105'}`}
+        onClick={() => handleTabChange('Account')}
+      >
+        <FaUser className="mr-2" />
+        <span className="">Account</span>
+      </button>
+    </div>
             {/* Data display based on active tab */}
             <div className="bg-gray-100 p-4 rounded-md">
               {mainactiveTab === 'orderAlert' && (
@@ -220,7 +257,7 @@ const Test = () => {
                                 Payment
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Start Date
+                                Start From
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -326,7 +363,7 @@ const Test = () => {
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Food Name</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Details</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
+                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start From</th>
                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                </tr>
                              </thead>
@@ -455,7 +492,7 @@ const Test = () => {
                                     Payment
                                   </th>
                                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Booking Date
+                                   Start From
                                   </th>
                                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
@@ -528,6 +565,44 @@ const Test = () => {
                     </div>
                   )}
                 </div>
+              )}
+              {mainactiveTab === 'Account' && (
+                <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-center">Account Details</h2>
+                <div className="flex justify-center items-center space-x-4">
+                {userData.aadharCardUrl && (
+                      <img
+                        src={userData.aadharCardUrl}
+                        alt="Aadhar Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md"
+                      />
+                    )}
+                    {userData.panCardUrl && (
+                      <img
+                        src={userData.panCardUrl}
+                        alt="Pan Card"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md mt-2"
+                      />
+                    )}
+                </div>
+                <div className="text-center">
+                  <p><strong>Name:</strong> {userData.name}</p>
+                  <p><strong>Address:</strong> {userData.address}</p>
+                  <p><strong>User as:</strong> Arene Chef Vendor</p>
+                  <p><strong>Email:</strong> {userData.email}</p>
+                  <p><strong>Mobile Number:</strong> {userData.mobileNumber}</p>
+                  <p><strong>Pincode:</strong> {userData.pincode}</p>
+                  <p><strong>Verification:</strong> {userData.verified ? 'You are verified ' : 'In Process'}</p>
+                </div>
+                <div className="text-center mt-4">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
               )}
             </div>
           </div>
