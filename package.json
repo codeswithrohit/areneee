@@ -19,6 +19,7 @@
     "axios": "^0.27.2",
     "country-state-city": "^3.2.1",
     "crypto-js": "^4.1.1",
+    "daisyui": "^4.12.10",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.10",
     "file-saver": "^2.0.5",

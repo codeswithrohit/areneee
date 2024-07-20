@@ -2,10 +2,15 @@ import { useEffect, useState,useRef } from "react";
 import { useRouter } from 'next/router';
 import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 const placesLibrary = ['places'];
-const HomePage = () => {
+import { FaMapMarkerAlt } from 'react-icons/fa';
+const HomeTab = () => {
+  const [activeTab, setActiveTab] = useState('tab1');
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
   const router = useRouter();
   const [Location, setLocation] = useState('');
-  const [activeTab, setActiveTab] = useState('pg');
   const [category, setCategory] = useState('');
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -227,177 +232,107 @@ const HomePage = () => {
     router.push(`/CloudKitchen?location=${Location}&nearestLocation=${nearestLocation}&services=${services}`);
   };
 
-  
   return (
-    <div  >
-         <div  className=" bg-white px-2 mb-8 md:mt-12 mt-32">
-       
-        {/* Left Column - Image Slider */}
-        {/* <div  >
-          <div className="lg:pr-1   lg:py-4 ">
-            <img src={imageList[currentImageIndex].imageUrl} className="h-full w-full object-cover -xl" alt={`Slider Image ${currentImageIndex + 1}`} />
-          </div>
-        </div>
-        <div className="flex justify-center -mt-8 lg:-mt-16">
-          {imageList.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 lg:w-4 lg:h-4 mx-1 -full cursor-pointer ${index === currentImageIndex ? 'bg-white' : 'bg-gray-300'}`}
-              onClick={() => handleDotClick(index)}
-            />
-          ))}
-        </div> */}
-      </div>
-
-      <div className="relative min-h-[430px] mt-1">
+    <div>
+      <section id="hero" className="relative h-[430px] mt-16">
   <video
     className="absolute top-0 left-0 w-full h-full object-cover"
-    style={{ objectFit: 'fill' }} // Ensures the video covers the entire area without being cut off
+    style={{ objectFit: 'cover' }} // Ensures the video covers the entire area without being cut off
     src="home.mp4"
     autoPlay
     loop
     muted
   />
-  
-  <div className="relative z-10 hero-content__container flex flex-col  container mx-auto px-2 md:px-4">
-    <div className="flex items-start justify-start gap-5">
-      <button className="flex items-center -full h-10 px-3 text-red-600 font-bold capitalize border-2 border-white hover:scale-95 transition-all duration-300">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide mr-4 text-red-600 font-bold lucide-map-pin">
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        <span className="sr-only">Location Icon</span>
-        {locations}
-      </button>
+  <div className="relative z-10 max-w-[90%] lg:max-w-[85%] mx-auto grid place-content-center h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-1 gap-8 place-content-center">
+      <div>
+        <h1 className='text-4xl font-bold font-mono text-center text-gray-900 mt-8'> Discover your perfect stay around the India</h1>
+        <div className="flex justify-center">
+      <h2 className="text-xl flex items-center space-x-2">
+        <FaMapMarkerAlt className="text-red-500" />
+        <span className="text-red-500 font-bold font-mono" >{locations}</span>
+      </h2>
     </div>
-    <div className="hero-content__text py-4">
-      <h3 className="text-2xl text-center text-red-600 font-bold underline">
-        Discover your perfect stay around the India
-      </h3>
-    </div>
-    
-      <section className="relative w-full h-full  mb-4">
-   
-      <div className="w-full h-32 -5xl md:px-32  ">
+      </div>
+      <div>
+      <div>
+      <div role="tablist" className="grid grid-cols-2 -mt-4  md:grid-cols-4 lg:grid-cols-8 border-b border-gray-300">
+        {/* Tab Buttons */}
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab1' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab1')}
+        >
+          ARENE PG
+        </button>
+        <button
+          className={`flex-1 p-1 text-[12px] font-mono font-bold font-bold text-center ${activeTab === 'tab2' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab2')}
+        >
+          BUY PROPERTY
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab3' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab3')}
+        >
+          RENT PROPERTY
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab4' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab4')}
+        >
+         ARENE HOTEL
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab5' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab5')}
+        >
+          BANQUEET HALL
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab6' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab6')}
+        >
+          RESORT
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab7' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab7')}
+        >
+          ARENE LAUNDRY
+        </button>
+        <button
+          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab8' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
+          onClick={() => handleTabChange('tab8')}
+        >
+          ARENE CHEF
+        </button>
+      </div>
 
 
-        
-      <div className="md:h-10 h-36 grid grid-cols-2 md:grid-cols-8 w-full gap-0">
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'pg' ? 'bg-emerald-500 text-white font-bold text-md border-emerald-500' : 'font-bold text-sm bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('pg')}
-  >
-    ARENE PG
-  </button>
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'buy' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('buy')}
-  >
-    Buy
-  </button>
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'rent' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('rent')}
-  >
-    Rent
-  </button>
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'hotel' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('hotel')}
-  >
-    Hotel
-  </button>
-  <button
-    className={`flex items-center justify-center text-xs border border-gray-300 ${
-      activeTab === 'BanqueetHall' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('BanqueetHall')}
-  >
-    Banquet Hall
-  </button>
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'Resort' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('Resort')}
-  >
-    Resort
-  </button>
-  <button
-    className={`flex items-center justify-center text-sm border border-gray-300 ${
-      activeTab === 'Laundry' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('Laundry')}
-  >
-    Arene Laundry
-  </button>
-  <button
-    className={`flex items-center justify-center text-xs border border-gray-300 ${
-      activeTab === 'CloudKitchen' ? 'bg-emerald-500 text-white font-bold text-xs border-emerald-500' : 'font-semibold text-xs bg-neutral-100 border-gray-300'
-    }`}
-    onClick={() => handleTabClick('CloudKitchen')}
-  >
-    Arene Chef
-  </button>
-</div>
-
-
-
-
-
-
-
-
-
-<div className="md:col-span-8 md:h-auto col-span-2  md:gap-4 ">
-
-     
-      {activeTab === 'pg' && (
-        <>
-          <div className="h-full w-full">
-            <select
-              value={category}
+      {/* Tab Panels */}
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab1' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+          <select  value={category}
               onChange={handleCategoryChange}
               name=""
-              id=""
-              className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
-            >
-              {pgData.map((categoryOption, index) => (
+              id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+            {pgData.map((categoryOption, index) => (
                 <option key={index} value={categoryOption}>
                   {categoryOption}
                 </option>
               ))}
-            </select>
-          </div>
-          <div className="h-full w-full">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <input
-                value={Location}
+          </select>
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location}
                 name="Location"
                 placeholder="Search location"
-                onChange={(e) => setLocation(e.target.value)}
-                className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
-                type="text"
-              />
-            </Autocomplete>
-          </div>
-          <div className="h-full w-full">
-            <select
-              value={nearestLocation}
+                onChange={(e) => setLocation(e.target.value)}  className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select   value={nearestLocation}
               onChange={handleNearestLocationChange}
               name=""
-              id=""
-              className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
-            >
-              <option value="" disabled selected>
+              id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+             <option value="" disabled selected>
                 Nearest location
               </option>
               <option value="2">Nearest 2 Km</option>
@@ -405,37 +340,27 @@ const HomePage = () => {
               <option value="6">Nearest 6 Km</option>
               <option value="8">Nearest 8 Km</option>
               <option value="10">Nearest 10 Km</option>
-            </select>
-          </div>
-          <button
-            onClick={handlePGSearch}
-            className="text-white w-full bg-emerald-500 font-bold text-xs px-5 py-1 h-10 col-span-3"
-          >
-            Search
-          </button>
-        </>
-      )}
-        {activeTab === 'buy' && (
-          <>
-            <div className="h-full w-full">
-              <select value={category} onChange={handleCategoryChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-              {buyData.map((categoryOption, index) => (
+          </select>
+          <button        onClick={handlePGSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
+
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab2' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+          <select value={category} onChange={handleCategoryChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+          {buyData.map((categoryOption, index) => (
                 <option key={index} value={categoryOption}>
                 {categoryOption}
                 </option>
               ))}
-              </select>
-            </div>
-            <div className="h-full w-full">
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <input   value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs" type="text" />
-              </Autocomplete>
-            </div>
-            <div className="h-full w-full">
-              <select  value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-             <option value="" disabled selected>
+          </select>
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select value={nearestLocation}
+          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+           <option value="" disabled selected>
             Nearest location
           </option>
                <option value="2">Nearest 2 Km</option>
@@ -443,57 +368,27 @@ const HomePage = () => {
           <option value="6">Nearest 6 Km</option>
           <option value="8">Nearest 8 Km</option>
           <option value="10">Nearest 10 Km</option>
-              </select>
-            </div>
-            <button  onClick={handleBuySearch} className="text-white  bg-emerald-500 font-bold text-xs w-full  px-5 py-1 h-10 col-span-3">Search</button>
-          </>
-        )}
-        {activeTab === 'rent' && (
-          <>
-          <div className="h-full w-full">
-            <select value={category} onChange={handleCategoryChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-            {rentData.map((categoryOption, index) => (
+          </select>
+          <button onClick={handleBuySearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
+
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab3' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+          <select value={category} onChange={handleCategoryChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+          {rentData.map((categoryOption, index) => (
               <option key={index} value={categoryOption}>
               {categoryOption}
               </option>
             ))}
-            </select>
-          </div>
-          <div className="h-full w-full">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-            <input   value={Location} name="Location" placeholder="Search location"
-  onChange={(e) => setLocation(e.target.value)} className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs" type="text" />
-            </Autocomplete>
-          </div>
-          <div className="h-full w-full">
-            <select  value={nearestLocation}
-        onChange={handleNearestLocationChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
+          </select>
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select value={nearestLocation}
+          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
            <option value="" disabled selected>
-          Nearest location
-        </option>
-             <option value="2">Nearest 2 Km</option>
-        <option value="4">Nearest 4 Km</option>
-        <option value="6">Nearest 6 Km</option>
-        <option value="8">Nearest 8 Km</option>
-        <option value="10">Nearest 10 Km</option>
-            </select>
-          </div>
-          <button  onClick={handleRentSearch} className="text-white w-full  bg-emerald-500 font-bold text-xs  px-5 py-1 h-10 col-span-3">Search</button>
-        </>
-        )}
-        {activeTab === 'hotel' && (
-            <>
-           
-            <div className="h-full w-full">
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <input   value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs" type="text" />
-              </Autocomplete>
-            </div>
-            <div className="h-full w-full">
-              <select  value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-             <option value="" disabled selected>
             Nearest location
           </option>
                <option value="2">Nearest 2 Km</option>
@@ -501,27 +396,21 @@ const HomePage = () => {
           <option value="6">Nearest 6 Km</option>
           <option value="8">Nearest 8 Km</option>
           <option value="10">Nearest 10 Km</option>
-              </select>
-            </div>
-            <div className="h-full w-full" >
-            <button  onClick={handleHotelSearch} className="text-white w-full bg-emerald-500 font-bold text-xs  px-4 py-1 h-8 col-span-3">Search</button>
-            </div>
+          </select>
+          <button onClick={handleRentSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
 
-          </>
-        )}
-        {activeTab === 'BanqueetHall' && (
-            <>
-           
-            <div className="h-full w-full">
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <input   value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs" type="text" />
-              </Autocomplete>
-            </div>
-            <div className="h-full w-full">
-              <select  value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-             <option value="" disabled selected>
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab4' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+         
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select value={nearestLocation}
+          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+           <option value="" disabled selected>
             Nearest location
           </option>
                <option value="2">Nearest 2 Km</option>
@@ -529,27 +418,21 @@ const HomePage = () => {
           <option value="6">Nearest 6 Km</option>
           <option value="8">Nearest 8 Km</option>
           <option value="10">Nearest 10 Km</option>
-              </select>
-            </div>
-            <div className="h-full w-full" >
-            <button  onClick={handleBanqueetHallSearch} className="text-white w-full bg-emerald-500 font-bold text-xs  px-4 py-1 h-8 col-span-3">Search</button>
-            </div>
+          </select>
+          <button onClick={handleHotelSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
 
-          </>
-        )}
-        {activeTab === 'Resort' && (
-            <>
-           
-            <div className="h-full w-full">
-              <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-              <input   value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs" type="text" />
-              </Autocomplete>
-            </div>
-            <div className="h-full w-full">
-              <select  value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs">
-             <option value="" disabled selected>
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab5' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+         
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select value={nearestLocation}
+          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+           <option value="" disabled selected>
             Nearest location
           </option>
                <option value="2">Nearest 2 Km</option>
@@ -557,27 +440,40 @@ const HomePage = () => {
           <option value="6">Nearest 6 Km</option>
           <option value="8">Nearest 8 Km</option>
           <option value="10">Nearest 10 Km</option>
-              </select>
-            </div>
-            <div className="h-full w-full" >
-            <button  onClick={handleResortSearch} className="text-white bg-emerald-500 w-full font-bold text-xs  px-4 py-1 h-8 col-span-3">Search</button>
-            </div>
+          </select>
+          <button onClick={handleBanqueetHallSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
 
-          </>
-        )}
-        
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab6' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+         
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+          <select value={nearestLocation}
+          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
+           <option value="" disabled selected>
+            Nearest location
+          </option>
+               <option value="2">Nearest 2 Km</option>
+          <option value="4">Nearest 4 Km</option>
+          <option value="6">Nearest 6 Km</option>
+          <option value="8">Nearest 8 Km</option>
+          <option value="10">Nearest 10 Km</option>
+          </select>
+          <button onClick={handleResortSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
 
-        {activeTab === 'Laundry' && (
-          <>
-          <div className="h-full w-full">
-            <select
-        name="service"
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab7' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+          <select  name="service"
         value={services}
        onChange={handleServiceChange}
-        required
-        className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
-      >
-        <option value="">Select Service</option>
+        required className="border-b-2 border-[#43d3b1] text-xs p-1">
+         <option value="">Select Service</option>
         {/* Replace this with your list of services */}
         <option value="Iron and Fold">Iron & Fold</option>
         <option value="Wash and Iron">Wash & Iron</option>
@@ -585,67 +481,45 @@ const HomePage = () => {
         <option value="Dry Cleaning">Dry Cleaning</option>
         <option value="Emergency Service">Emergency Service</option>
         <option value="Subscription Based">Subscription Based</option>
-        {/* Add more options as needed */}
-      </select>
-          </div>
-          
-          <div className="h-full w-full">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-            <input   value={Location} name="Location" placeholder="Search location"
-  onChange={(e) => setLocation(e.target.value)} className="appearance-none text-xs border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" />
-            </Autocomplete>
-          </div>
-          <div className="h-full w-full">
-          <button  onClick={handleLaundrySearch} className="text-white bg-emerald-500 w-full font-bold text-xs  px-4 py-1 h-8 col-span-3">Search</button>
-          </div>
-        </>
-        )}
-        {activeTab === 'CloudKitchen' && (
-          <>
-          <div className="h-full w-full">
-            <select
-        name="service"
+          </select>
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+         
+          <button onClick={handleLaundrySearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
+      </div>
+
+      <div role="tabpanel" className={`tab-content ${activeTab === 'tab8' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
+        <div className="grid gap-2 grid-cols-1">
+          <select  name="service"
         value={services}
        onChange={handleServiceChange}
-        required
-        className="appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
-      >
+        required className="border-b-2 uppercase border-[#43d3b1] text-xs p-1">
         <option value="">Select Service</option>
         <option value="chinese">Chinese</option>
       <option value="veg-thali">Veg Thali</option>
       <option value="non-veg-thali">Non-Veg Thali</option>
-      </select>
-          </div>
-          
-          <div className="h-full w-full">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-            <input   value={Location} name="Location" placeholder="Search location"
-  onChange={(e) => setLocation(e.target.value)} className="appearance-none text-xs border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" />
-            </Autocomplete>
-          </div>
-          <div className="h-full w-full">
-          <button  onClick={handleCloudKitchenSearch} className="text-white w-full bg-emerald-500 font-bold text-xs  px-4 py-1 h-8 col-span-3">Search</button>
-          </div>
-        </>
-        )}
-
+          </select>
+          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <input type="text" value={Location} name="Location" placeholder="Search location"
+    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
+          </Autocomplete>
+         
+          <button  onClick={handleCloudKitchenSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
+        </div>
       </div>
-    </div>
-  
 
-</section>
+
+    </div>
+</div>
+
     </div>
   </div>
-
-
-
-
-
-
-
-
+</section>
     </div>
   )
 }
 
-export default HomePage
+export default HomeTab
