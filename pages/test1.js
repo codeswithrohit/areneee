@@ -1,525 +1,254 @@
-import { useEffect, useState,useRef } from "react";
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Autocomplete, useLoadScript } from '@react-google-maps/api';
-const placesLibrary = ['places'];
-import { FaMapMarkerAlt } from 'react-icons/fa';
-const HomeTab = () => {
-  const [activeTab, setActiveTab] = useState('tab1');
+import { firebase } from '../Firebase/config';
+import 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Head from 'next/head';
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
+const PropertiesByCities = () => {
   const router = useRouter();
-  const [Location, setLocation] = useState('');
-  const [category, setCategory] = useState('');
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-
-
-    
-  };
-
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const imageList = [
-   
-    {
-      id: 1,
-      imageUrl: "slidera.gif",
-    },
-    {
-      id: 2,
-      imageUrl: "sliderb.gif",
-    },
-    {
-      id: 3,
-      imageUrl: "sliderc.gif",
-    },
-    {
-      id: 3,
-      imageUrl: "sliderd.gif",
-    },
-    {
-      id: 3,
-      imageUrl: "slidere.gif",
-    },
-    {
-      id: 3,
-      imageUrl: "sliderf.gif",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [filteredData, setFilteredData] = useState([]);
+  const [fetchedData, setFetchedData] = useState([]);
+  const { location } = router.query;
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === imageList.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 4000); // Change the interval as needed
+    const fetchData = async () => {
+      try {
+        // Replace 'yourCollectionName' with the actual collection name
+        const collections = [
+          'Resortdetail',
+          'rentdetail',
+          'pgdetail',
+          'Hoteldetail',
+          'buydetail',
+          'Banqueethalldetail'
+        ];
 
-    return () => clearInterval(intervalId);
-  }, [currentImageIndex]);
+        const fetchPromises = collections.map(async (collectionName) => {
+          const collectionRef = firebase.firestore().collection(collectionName).where('Verified', '==', 'true');
+          const querySnapshot = await collectionRef.get();
+          return querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            distance: null, // Initially set distance as null
+          }));
+        });
 
- 
- 
-  const handleDotClick = (index) => {
-    setCurrentImageIndex(index);
-  };
+        const allData = (await Promise.all(fetchPromises)).flat();
 
+        console.log('Fetched Data:', allData);
 
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [locations, setLocations] = useState(null);
+        // Set the fetched data to the state
+        setFetchedData(allData);
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
+        // Calculate distances for each item
+        const distances = await Promise.all(
+          allData.map(async (item) => {
+            const formattedDistance = await calculateDistance(location, item.location);
+            return formattedDistance;
+          })
+        );
 
-          // Fetch location name using reverse geocoding
-          fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ`)
-            .then(response => response.json())
-            .then(data => {
-              if (data.results && data.results.length > 0) {
-                // Extracting more specific address components
-                const addressComponents = data.results[0].address_components;
-                const cityName = addressComponents.find(component => component.types.includes('locality'));
-                const stateName = addressComponents.find(component => component.types.includes('administrative_area_level_1'));
-                const countryName = addressComponents.find(component => component.types.includes('country'));
+        // Update the distances in fetchedData
+        const updatedData = allData.map((item, index) => ({
+          ...item,
+          distance: distances[index],
+        }));
 
-                // Constructing a more detailed location name
-                const detailedLocation = [cityName, stateName, countryName]
-                  .filter(component => component !== undefined)
-                  .map(component => component.long_name)
-                  .join(', ');
-
-                setLocations(detailedLocation);
-              } else {
-                setLocations("Location not found");
-              }
-            })
-            .catch(error => {
-              console.error('Error fetching location:', error);
-              setLocations("Error fetching location");
-            });
-        },
-        (error) => {
-          console.error('Error getting geolocation:', error);
-        }
-      );
-    } else {
-      console.error('Geolocation is not supported by this browser.');
-    }
-  }, []);
-  const [nearestLocation, setNearestLocation] = useState('');
-  const [services, setServices] = useState('');
-  const [subservices, setSubservices] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0); 
-  const images = [
-    "https://www.easiui.com/hero-section/image/hero17.png",
-  ];
-
-  // Function to handle automatic image slider
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000); // Change slide every 5 seconds
-    return () => clearInterval(intervalId);
-  }, [images.length]);
-  const handleNearestLocationChange = (e) => {
-   setNearestLocation(e.target.value);
- };
-  const handleServiceChange = (e) => {
-   setServices(e.target.value);
- };
-  const handleSubsevicesChange = (e) => {
-   setSubservices(e.target.value);
- };
-  const handleCategoryChange = (event) => {
-    const selectedCategory = event.target.value;
-    setCategory(selectedCategory);
-    console.log('Selected Category:', selectedCategory);
-  };
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: 'AIzaSyB6gEq59Ly20DUl7dEhHW9KgnaZy4HrkqQ',
-    libraries: placesLibrary,
-  });
- 
-
-  const autocompleteRef = useRef();
-
-
-
-  const onLoad = (autocomplete) => {
-    autocompleteRef.current = autocomplete;
-  };
-  
-
-
-
-
-  const onPlaceChanged = () => {
-    const autocomplete = autocompleteRef.current;
-  
-    if (autocomplete && autocomplete.getPlace) {
-      const place = autocomplete.getPlace();
-  
-      if (place && place.formatted_address) {
-        setLocation(place.formatted_address); // Update to set the full formatted address
+        // Set the updated fetched data to the state
+        setFetchedData(updatedData);
+        setLoading(false); // Set loading to false after data is fetched
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false); // Set loading to false in case of error
       }
-    }
-  };
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-      <button type="button"
-        className="px-6 py-2.5 rounded-full text-white text-sm tracking-wider font-semibold border-none outline-none bg-[#43d3b0] hover:bg-orange-700 active:bg-[#43d3b0]">
-        Loading
-        <svg xmlns="http://www.w3.org/2000/svg" width="18px" fill="#fff" className="ml-2 inline animate-spin" viewBox="0 0 24 24">
-          <path fillRule="evenodd"
-            d="M7.03 2.757a1 1 0 0 1 1.213-.727l4 1a1 1 0 0 1 .59 1.525l-2 3a1 1 0 0 1-1.665-1.11l.755-1.132a7.003 7.003 0 0 0-2.735 11.77 1 1 0 0 1-1.376 1.453A8.978 8.978 0 0 1 3 12a9 9 0 0 1 4.874-8l-.117-.03a1 1 0 0 1-.727-1.213zm10.092 3.017a1 1 0 0 1 1.414.038A8.973 8.973 0 0 1 21 12a9 9 0 0 1-5.068 8.098 1 1 0 0 1-.707 1.864l-3.5-1a1 1 0 0 1-.557-1.517l2-3a1 1 0 0 1 1.664 1.11l-.755 1.132a7.003 7.003 0 0 0 3.006-11.5 1 1 0 0 1 .039-1.413z"
-            clipRule="evenodd" data-original="#000000" />
-        </svg> {/* You can replace this with any loading spinner component or element */}
-      </button>
-    </div>
-    );
-  }
+    };
 
-  const buyData = ['Buy Category', 'Appartment', 'Builder Floor','Villas',,'Land','Shop/Showroom','Office Space','Other Properties'];
-  const handleBuySearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/Buy?category=${category}&location=${Location}&nearestLocation=${nearestLocation}`);
-  };
+    fetchData(); // Call the function to fetch data
+  }, [location]);
 
-
-  const pgData = ['PG Category', 'Boys', 'Girls'];
-  const handlePGSearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/pg?category=${category}&location=${Location}&nearestLocation=${nearestLocation}`);
+  const calculateDistance = (location1, location2) => {
+    return new Promise((resolve, reject) => {
+      if (location1.trim() !== '' && location2.trim() !== '') {
+        const service = new window.google.maps.DistanceMatrixService();
+        service.getDistanceMatrix(
+          {
+            origins: [location1],
+            destinations: [location2],
+            travelMode: 'DRIVING',
+          },
+          (response, status) => {
+            if (status === 'OK' && response.rows && response.rows.length > 0 && response.rows[0].elements && response.rows[0].elements.length > 0) {
+              const { distance } = response.rows[0].elements[0];
+              if (distance) {
+                const distanceValue = distance.value; // Distance in meters
+                const distanceKm = distanceValue / 1000; // Convert distance to kilometers
+                const formattedDistance = `${distance.text}`; // Construct the desired format
+                console.log('Distance:', formattedDistance);
+                resolve(formattedDistance);
+              }
+            } else {
+              console.log('Error:', status);
+              reject(null);
+            }
+          }
+        );
+      } else {
+        console.log('Please enter both locations.');
+        reject(null);
+      }
+    });
   };
-
-
-  const rentData = ['Rent Category', 'Appartment', 'Builder Floor','Shop/Showroom','Office Space','Other Properties'];
-  const handleRentSearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/Rent?category=${category}&location=${Location}&nearestLocation=${nearestLocation}`);
-  };
-
-
-  const handleHotelSearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/Hotel?location=${Location}&nearestLocation=${nearestLocation}`);
-  };
-  const handleBanqueetHallSearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/BanqueetHall?location=${Location}&nearestLocation=${nearestLocation}`);
-  };
-  const handleResortSearch = () => {
-    // Redirect to the detail page with the parameters
-    router.push(`/Resort?location=${Location}&nearestLocation=${nearestLocation}`);
-  };
-  const handleLaundrySearch = () => {
-    const nearestLocation = 10; // Setting nearestLocation to 10
-    // Redirect to the detail page with the parameters
-    router.push(`/Laundry?location=${Location}&nearestLocation=${nearestLocation}&services=${services}`);
-  };
-  const handleCloudKitchenSearch = () => {
-    const nearestLocation = 10; // Setting nearestLocation to 10
-    // Redirect to the detail page with the parameters
-    router.push(`/CloudKitchen?location=${Location}&nearestLocation=${nearestLocation}&services=${services}`);
-  };
-
+  console.log("fetheddata",fetchedData)
   return (
     <div>
-      <section id="hero" className="relative h-[430px] mt-16">
-  <video
-    className="absolute top-0 left-0 w-full h-full object-cover"
-    style={{ objectFit: 'cover' }} // Ensures the video covers the entire area without being cut off
-    src="home.mp4"
-    autoPlay
-    loop
-    muted
-  />
-  <div className="relative z-10 max-w-[90%] lg:max-w-[85%] mx-auto grid place-content-center h-full">
-    <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-1 gap-8 place-content-center">
-      <div>
-        <h1 className='text-4xl font-bold font-mono text-center text-white mt-8'> Discover your perfect stay around the India</h1>
-        <div className="flex justify-center">
-      <h2 className="text-xl flex items-center space-x-2">
-        <FaMapMarkerAlt className="text-red-500" />
-        <span className="text-red-500 font-bold font-mono" >{locations}</span>
-      </h2>
-    </div>
-      </div>
-      <div>
-      <div>
-      <div role="tablist" className="grid grid-cols-2 -mt-4  md:grid-cols-4 lg:grid-cols-8 border-b border-gray-300">
-        {/* Tab Buttons */}
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab1' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab1')}
-        >
-          ARENE PG
-        </button>
-        <button
-          className={`flex-1 p-1 text-[12px] font-mono font-bold font-bold text-center ${activeTab === 'tab2' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab2')}
-        >
-          BUY PROPERTY
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab3' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab3')}
-        >
-          RENT PROPERTY
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab4' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab4')}
-        >
-         ARENE HOTEL
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab5' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab5')}
-        >
-          BANQUEET HALL
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab6' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab6')}
-        >
-          RESORT
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab7' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab7')}
-        >
-          ARENE LAUNDRY
-        </button>
-        <button
-          className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab8' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => handleTabChange('tab8')}
-        >
-          ARENE CHEF
-        </button>
-      </div>
-
-
-      {/* Tab Panels */}
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab1' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-          <select  value={category}
-              onChange={handleCategoryChange}
-              name=""
-              id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-            {pgData.map((categoryOption, index) => (
-                <option key={index} value={categoryOption}>
-                  {categoryOption}
-                </option>
-              ))}
-          </select>
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location}
-                name="Location"
-                placeholder="Search location"
-                onChange={(e) => setLocation(e.target.value)}  className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select   value={nearestLocation}
-              onChange={handleNearestLocationChange}
-              name=""
-              id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-             <option value="" disabled selected>
-                Nearest location
-              </option>
-              <option value="2">Nearest 2 Km</option>
-              <option value="4">Nearest 4 Km</option>
-              <option value="6">Nearest 6 Km</option>
-              <option value="8">Nearest 8 Km</option>
-              <option value="10">Nearest 10 Km</option>
-          </select>
-          <button        onClick={handlePGSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab2' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-          <select value={category} onChange={handleCategoryChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-          {buyData.map((categoryOption, index) => (
-                <option key={index} value={categoryOption}>
-                {categoryOption}
-                </option>
-              ))}
-          </select>
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-           <option value="" disabled selected>
-            Nearest location
-          </option>
-               <option value="2">Nearest 2 Km</option>
-          <option value="4">Nearest 4 Km</option>
-          <option value="6">Nearest 6 Km</option>
-          <option value="8">Nearest 8 Km</option>
-          <option value="10">Nearest 10 Km</option>
-          </select>
-          <button onClick={handleBuySearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab3' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-          <select value={category} onChange={handleCategoryChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-          {rentData.map((categoryOption, index) => (
-              <option key={index} value={categoryOption}>
-              {categoryOption}
-              </option>
-            ))}
-          </select>
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-           <option value="" disabled selected>
-            Nearest location
-          </option>
-               <option value="2">Nearest 2 Km</option>
-          <option value="4">Nearest 4 Km</option>
-          <option value="6">Nearest 6 Km</option>
-          <option value="8">Nearest 8 Km</option>
-          <option value="10">Nearest 10 Km</option>
-          </select>
-          <button onClick={handleRentSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab4' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-         
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-           <option value="" disabled selected>
-            Nearest location
-          </option>
-               <option value="2">Nearest 2 Km</option>
-          <option value="4">Nearest 4 Km</option>
-          <option value="6">Nearest 6 Km</option>
-          <option value="8">Nearest 8 Km</option>
-          <option value="10">Nearest 10 Km</option>
-          </select>
-          <button onClick={handleHotelSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab5' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-         
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-           <option value="" disabled selected>
-            Nearest location
-          </option>
-               <option value="2">Nearest 2 Km</option>
-          <option value="4">Nearest 4 Km</option>
-          <option value="6">Nearest 6 Km</option>
-          <option value="8">Nearest 8 Km</option>
-          <option value="10">Nearest 10 Km</option>
-          </select>
-          <button onClick={handleBanqueetHallSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab6' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-         
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-          <select value={nearestLocation}
-          onChange={handleNearestLocationChange} name="" id="" className="border-b-2 border-[#43d3b1] text-xs p-1">
-           <option value="" disabled selected>
-            Nearest location
-          </option>
-               <option value="2">Nearest 2 Km</option>
-          <option value="4">Nearest 4 Km</option>
-          <option value="6">Nearest 6 Km</option>
-          <option value="8">Nearest 8 Km</option>
-          <option value="10">Nearest 10 Km</option>
-          </select>
-          <button onClick={handleResortSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab7' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-          <select  name="service"
-        value={services}
-       onChange={handleServiceChange}
-        required className="border-b-2 border-[#43d3b1] text-xs p-1">
-         <option value="">Select Service</option>
-        {/* Replace this with your list of services */}
-        <option value="Iron and Fold">Iron & Fold</option>
-        <option value="Wash and Iron">Wash & Iron</option>
-        <option value="Wash and Fold">Wash & Fold</option>
-        <option value="Dry Cleaning">Dry Cleaning</option>
-        <option value="Emergency Service">Emergency Service</option>
-        <option value="Subscription Based">Subscription Based</option>
-          </select>
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-         
-          <button onClick={handleLaundrySearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-      <div role="tabpanel" className={`tab-content ${activeTab === 'tab8' ? 'block' : 'hidden'} bg-base-100 border-base-300 rounded-b-md p-4`}>
-        <div className="grid gap-2 grid-cols-1">
-          <select  name="service"
-        value={services}
-       onChange={handleServiceChange}
-        required className="border-b-2 uppercase border-[#43d3b1] text-xs p-1">
-        <option value="">Select Service</option>
-        <option value="chinese">Chinese</option>
-      <option value="veg-thali">Veg Thali</option>
-      <option value="non-veg-thali">Non-Veg Thali</option>
-          </select>
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-          <input type="text" value={Location} name="Location" placeholder="Search location"
-    onChange={(e) => setLocation(e.target.value)} className="border-b-2 w-full border-[#43d3b1] outline-none text-xs p-1" />
-          </Autocomplete>
-         
-          <button  onClick={handleCloudKitchenSearch} className="bg-[#43d3b1] p-2 rounded-btn text-white text-xs">Search</button>
-        </div>
-      </div>
-
-
-    </div>
+      <section>
+                    <div className="max-w-[90%] lg:max-w-[85%] mx-auto my-8 md:my-12 lg:my-20">
+                        <div className="text-center">
+                            <p className="text-lg mb-2 text-color4">FEATURED PROPERTIES</p>
+                            <p className="text-3xl font-semibold">Recommended for you</p>
+                        </div>
+                        <div className="w-full mx-auto mt-8">
+  <div className="grid grid-cols-3 gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">All</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">ARENE PG</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">BUY PROPERTY</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">RENT PROPERTY</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">ARENE HOTELS</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">BANQUEET HALL</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">RESORT</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">ARENE LAUNDRY</a>
+    <a href="" className="px-4 py-2 bg-color3 font-medium rounded-lg hover:bg-color4 hover:text-white duration-200 text-center">ARENE CHEF</a>
+  </div>
 </div>
 
-    </div>
-  </div>
-</section>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-8 my-10">
+                            <div className="rounded-lg overflow-hidden border">
+                                <div className="h-[240px] w-full">
+                                    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/01/f1/03/d9/dasashwamedh-ghat.jpg?w=1400&h=1400&s=1" alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-xl font-semibold">Casa Lomas De Machalí Machas</p>
+                                    <p className="mb-2"><i className="fa-solid fa-location-dot text-color4 me-1"></i>Jaunpur, U.P.</p>
+                                    <div className="flex gap-8 text-lg">
+                                        <p><i className="fa-solid fa-bed me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-bath me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-ruler me-2"></i>3</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 border-t">
+                                    <div className="flex gap-2 items-center">
+                                        <img src="https://play-lh.googleusercontent.com/C9CAt9tZr8SSi4zKCxhQc9v4I6AOTqRmnLchsu1wVDQL0gsQ3fmbCVgQmOVM1zPru8UH" className="w-10 h-10 rounded-full object-cover" alt="" />
+                                        <p className="text-lg font-medium">John Wick</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[24px] font-medium"><i className="fa-solid fa-indian-rupee-sign me-1"></i>15,000<span className="text-gray-400">/SQFT</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-lg overflow-hidden border">
+                                <div className="h-[240px] w-full">
+                                    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/01/f1/03/d9/dasashwamedh-ghat.jpg?w=1400&h=1400&s=1" alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-xl font-semibold">Casa Lomas De Machalí Machas</p>
+                                    <p className="mb-2"><i className="fa-solid fa-location-dot text-color4 me-1"></i>Jaunpur, U.P.</p>
+                                    <div className="flex gap-8 text-lg">
+                                        <p><i className="fa-solid fa-bed me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-bath me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-ruler me-2"></i>3</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 border-t">
+                                    <div className="flex gap-2 items-center">
+                                        <img src="https://play-lh.googleusercontent.com/C9CAt9tZr8SSi4zKCxhQc9v4I6AOTqRmnLchsu1wVDQL0gsQ3fmbCVgQmOVM1zPru8UH" className="w-10 h-10 rounded-full object-cover" alt="" />
+                                        <p className="text-lg font-medium">John Wick</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[24px] font-medium"><i className="fa-solid fa-indian-rupee-sign me-1"></i>15,000<span className="text-gray-400">/SQFT</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-lg overflow-hidden border">
+                                <div className="h-[240px] w-full">
+                                    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/01/f1/03/d9/dasashwamedh-ghat.jpg?w=1400&h=1400&s=1" alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-xl font-semibold">Casa Lomas De Machalí Machas</p>
+                                    <p className="mb-2"><i className="fa-solid fa-location-dot text-color4 me-1"></i>Jaunpur, U.P.</p>
+                                    <div className="flex gap-8 text-lg">
+                                        <p><i className="fa-solid fa-bed me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-bath me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-ruler me-2"></i>3</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 border-t">
+                                    <div className="flex gap-2 items-center">
+                                        <img src="https://play-lh.googleusercontent.com/C9CAt9tZr8SSi4zKCxhQc9v4I6AOTqRmnLchsu1wVDQL0gsQ3fmbCVgQmOVM1zPru8UH" className="w-10 h-10 rounded-full object-cover" alt="" />
+                                        <p className="text-lg font-medium">John Wick</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[24px] font-medium"><i className="fa-solid fa-indian-rupee-sign me-1"></i>15,000<span className="text-gray-400">/SQFT</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-lg overflow-hidden border">
+                                <div className="h-[240px] w-full">
+                                    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/01/f1/03/d9/dasashwamedh-ghat.jpg?w=1400&h=1400&s=1" alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-xl font-semibold">Casa Lomas De Machalí Machas</p>
+                                    <p className="mb-2"><i className="fa-solid fa-location-dot text-color4 me-1"></i>Jaunpur, U.P.</p>
+                                    <div className="flex gap-8 text-lg">
+                                        <p><i className="fa-solid fa-bed me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-bath me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-ruler me-2"></i>3</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 border-t">
+                                    <div className="flex gap-2 items-center">
+                                        <img src="https://play-lh.googleusercontent.com/C9CAt9tZr8SSi4zKCxhQc9v4I6AOTqRmnLchsu1wVDQL0gsQ3fmbCVgQmOVM1zPru8UH" className="w-10 h-10 rounded-full object-cover" alt="" />
+                                        <p className="text-lg font-medium">John Wick</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[24px] font-medium"><i className="fa-solid fa-indian-rupee-sign me-1"></i>15,000<span className="text-gray-400">/SQFT</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-lg overflow-hidden border">
+                                <div className="h-[240px] w-full">
+                                    <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/01/f1/03/d9/dasashwamedh-ghat.jpg?w=1400&h=1400&s=1" alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-xl font-semibold">Casa Lomas De Machalí Machas</p>
+                                    <p className="mb-2"><i className="fa-solid fa-location-dot text-color4 me-1"></i>Jaunpur, U.P.</p>
+                                    <div className="flex gap-8 text-lg">
+                                        <p><i className="fa-solid fa-bed me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-bath me-2"></i>3</p>
+                                        <p><i className="fa-solid fa-ruler me-2"></i>3</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 border-t">
+                                    <div className="flex gap-2 items-center">
+                                        <img src="https://play-lh.googleusercontent.com/C9CAt9tZr8SSi4zKCxhQc9v4I6AOTqRmnLchsu1wVDQL0gsQ3fmbCVgQmOVM1zPru8UH" className="w-10 h-10 rounded-full object-cover" alt="" />
+                                        <p className="text-lg font-medium">John Wick</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[24px] font-medium"><i className="fa-solid fa-indian-rupee-sign me-1"></i>15,000<span className="text-gray-400">/SQFT</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <a href="#" className="text-lg font-semibold bg-color4 text-white p-4 rounded-btn hover:shadow-lg duration-200">View all properties</a>
+                        </div>
+                    </div>
+                </section>
     </div>
   )
 }
 
-export default HomeTab
+export default PropertiesByCities

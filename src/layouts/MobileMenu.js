@@ -2,7 +2,7 @@ import Link from "next/link";
 import React, { useState,useEffect } from "react";
 import { About, Blog, Contact, Home, Listing, Pages } from "./Menu";
 import { firebase } from "../../Firebase/config";
-import { FaUser, FaShoppingCart } from "react-icons/fa"; // Import the cart icon
+import { FaUser, FaShoppingCart,FaSignInAlt, } from "react-icons/fa"; // Import the cart icon
 import { BiShoppingBag } from 'react-icons/bi';
 const MobileMenu = () => {
   const [user, setUser] = useState(null);
@@ -183,11 +183,11 @@ const MobileMenu = () => {
                         </a>
                       </Link>
                     </li>
-                    <li className="hero-nav-btn">
+                    {/* <li className="hero-nav-btn">
                       <Link href="/Agent/Register">
                         <a className="main-btn icon-btn">Add Listing</a>
                       </Link>
-                    </li>
+                    </li> */}
                     <div
                     className="ml-4"
                 onMouseEnter={handleMouseEnter}
@@ -280,23 +280,14 @@ const MobileMenu = () => {
                   </div>
                 ) : (
                   <div className="relative group mb-6 ">
-                  <div className="menu-button">
-                    <div className="flex rounded hover:border-red-600 overflow-hidden cursor-pointer">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="30px"
-                        height="30px"
-                        viewBox="0 0 24 24"
-                        className="cursor-pointer hover:fill-[#43d3b0] inline mt-4"
-                      >
-                        <circle cx="10" cy="7" r="6" data-original="#000000" />
-                        <path
-                          d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
-                          data-original="#000000"
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                     <div className="menu-button mt-6">
+      <div className="flex rounded-lg border hover:border-red-600 overflow-hidden cursor-pointer p-2">
+        <FaSignInAlt
+          size={20}
+          className="text-gray-500 hover:text-[#43d3b0] transition-colors duration-200"
+        />
+      </div>
+    </div>
             
                   <div className="absolute right-0 z-30  w-64 bg-white rounded-md shadow-lg hidden group-hover:block">
                     <ul>

@@ -124,47 +124,60 @@ const Test = () => {
       });
   }, []);
 
-  const applyCoupon = (couponCode) => {
-    // Check if couponData is loaded
-    if (!couponData || couponData.length === 0) {
-      toast.error('Coupons are not loaded yet. Please wait.');
-      return getPaymentAmount(); // Return current payment amount
-    }
+ const applyCoupon = (couponCode) => {
+  console.log('Applying coupon:', couponCode); // Log coupon code
   
-    const coupon = couponData.find((coupon) => coupon.code === couponCode);
-  
-    if (coupon) {
-      const currentDate = dayjs().format('YYYY-MM-DD');
-      const expiryDate = dayjs(coupon.expirydate).format('YYYY-MM-DD');
-  
-      if (dayjs(currentDate).isBefore(expiryDate)) {
-        // Calculate discounted price (10% off)
-        const discountPercentage = 0.10;
-        let basePrice = 0;
-  
-        if (paymentOption === 'oneday') {
-          basePrice = 500;
-        } else if (paymentOption === 'threeday') {
-          basePrice = 1000;
-        } else {
-          basePrice = getPaymentAmount(); // fallback to current payment amount
-        }
-  
-        const discountAmount = basePrice * discountPercentage;
-        const discountedPrice = basePrice - discountAmount;
-  
-        setAppliedCoupon(coupon);
-        toast.success(`Coupon ${coupon.code} applied successfully!`);
-        return discountedPrice;
+  // Check if couponData is loaded
+  if (!couponData || couponData.length === 0) {
+    console.log('Coupons are not loaded yet.');
+    toast.error('Coupons are not loaded yet. Please wait.');
+    return getPaymentAmount(); // Return current payment amount
+  }
+
+  // Find the coupon from couponData
+  const coupon = couponData.find((coupon) => coupon.code === couponCode);
+  console.log('Found coupon:', coupon);
+
+  if (coupon) {
+    const currentDate = dayjs().format('YYYY-MM-DD');
+    const expiryDate = dayjs(coupon.expirydate).format('YYYY-MM-DD');
+    console.log('Current date:', currentDate);
+    console.log('Coupon expiry date:', expiryDate);
+
+    if (dayjs(currentDate).isBefore(expiryDate) || dayjs(currentDate).isSame(expiryDate, 'day')) {
+      // Calculate discounted price
+      const discountAmount = parseFloat(coupon.price); // Assuming coupon.price is the fixed discount amount
+      let basePrice = 0;
+
+      if (paymentOption === 'oneday') {
+        basePrice = 500;
+      } else if (paymentOption === 'threeday') {
+        basePrice = 1000;
       } else {
-        toast.error(`Coupon ${coupon.code} has expired!`);
+        basePrice = getPaymentAmount(); // fallback to current payment amount
       }
+
+      const discountedPrice = basePrice - discountAmount;
+
+      console.log('Base price:', basePrice);
+      console.log('Discount amount:', discountAmount);
+      console.log('Discounted price:', discountedPrice);
+
+      setAppliedCoupon(coupon);
+      toast.success(`Coupon ${coupon.code} applied successfully!`);
+      return discountedPrice;
     } else {
-      toast.error('Invalid coupon code!');
+      console.log('Coupon has expired.');
+      toast.error(`Coupon ${coupon.code} has expired!`);
     }
-  
-    return getPaymentAmount();
-  };
+  } else {
+    console.log('Invalid coupon code.');
+    toast.error('Invalid coupon code!');
+  }
+
+  return getPaymentAmount();
+};
+
 
   const submitBookingData = async (paymentAmount) => {
     try {

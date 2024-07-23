@@ -135,11 +135,11 @@ const Header1 = () => {
                       <CloudKitchen/>
                       <Contact />
                      
-                      <li className="nav-btn">
+                      {/* <li className="nav-btn">
                         <Link href="/Admin/Register">
                           <a className="main-btn icon-btn">Add Listing</a>
                         </Link>
-                      </li>
+                      </li> */}
                     </ul>
                   </nav>
                 </div>
