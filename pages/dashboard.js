@@ -123,6 +123,88 @@ console.log("chefdata",cheforders)
     
         fetchBookings();
     }, [user]);
+    const [propeertenquiry, SetPropertyenq] = useState([]);
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const snapshot = await firebase.firestore().collection('PropertyData').where('userid', '==', user.uid).get();
+                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                SetPropertyenq(data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching bookings:', error);
+                setLoading(false);
+            }
+        };
+    
+        fetchBookings();
+    }, [user]);
+console.log("useruid","property",user,propeertenquiry)
+const loadScript = async (src) => {
+  try {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.body.appendChild(script);
+    });
+    return true;
+  } catch (error) {
+    console.error('Error loading script:', error);
+    toast.error('Failed to load Razorpay SDK. Please try again later.');
+    return false;
+  }
+};
+
+const initiatePayment = async (item) => {
+  try {
+    setLoading(true);
+    const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+    if (!res) {
+      toast.error('Failed to load Razorpay SDK. Please try again later.');
+      return;
+    }
+
+    const amountInPaise = item.amount * 100; // Convert amount to paise
+    const options = {
+      key: 'rzp_test_td8CxckGpxFssp',
+      currency: 'INR',
+      amount: amountInPaise,
+      name: 'Arene Services',
+      description: 'Property Payment',
+      image: 'https://www.areneservices.in/public/front/images/property-logo.png',
+      handler: async function (response) {
+        console.log('Payment Successful:', response);
+        await firebase.firestore().collection('PropertyData').doc(item.id).update({
+          confirmstatus: 'Payment Done',
+          clientPaymentStatus: 'Client Payment Done'
+        });
+
+        await firebase.firestore().collection('PropertyPayment').add({
+          ...item,
+          paymentId: response.razorpay_payment_id,
+          paymentStatus: 'Successful'
+        });
+
+        toast.success('Payment Successful! Status Updated.');
+     
+      },
+      prefill: {
+        name: userData.name,
+        email: user.email,
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+  } catch (error) {
+    console.error('Error initiating payment:', error);
+    toast.error('Failed to initiate payment. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};
   const renderDetails = () => {
     switch (activeTab) {
       case 'Profile':
@@ -584,6 +666,58 @@ console.log("chefdata",cheforders)
         </div>
           </div>
         );
+        case 'Propert Enquiry':
+          return (
+            <div className="text-white mt-4 ml-4">
+              <div>
+              <section className="container mx-auto px-6 lg:py-16 py-36 font-mono">
+                  <h1 className='text-red-600 text-center font-bold text-4xl'>Property Enquiry</h1>
+                  <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr className="w-full bg-gray-200 text-gray-600">
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Name</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Phone</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Property Type</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Property Name</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Property Location</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Confimation Status</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Enquiry Date</th>
+                <th className="py-3 px-4 border-b border-gray-300 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {propeertenquiry.map((item) => (
+                <tr key={item.id}>
+                  <td className="py-3 px-4 border-b text-black border-gray-300">{item.name}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300">{item.phone}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300">{item.Type}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300">{item.propertyname}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300 text-xs">{item.propertylocation}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300 text-xs">
+  {item.confirmstatus ? item.confirmstatus : '------'}
+</td>
+
+                  <td className="py-3 px-4 border-b text-black border-gray-300">{item.enquiryDate}</td>
+                  <td className="py-3 px-4 border-b text-black border-gray-300">
+                          {item.amount && item.confirmstatus === 'Done' && (
+                            <button
+                              onClick={() => initiatePayment(item)}
+                              className="bg-blue-500 text-white px-4 py-2 rounded"
+                            >
+                              Pay
+                            </button>
+                          )}
+                        </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+              </section>
+          </div>
+            </div>
+          );
       default:
         return null;
     }
@@ -640,6 +774,13 @@ console.log("chefdata",cheforders)
             <FaHome className="w-6 h-6 mr-2" />
            Post Property
            </a>
+          </li>
+          <li
+            className={`flex items-center pl-2 py-1 cursor-pointer transition-all ${activeTab === 'Propert Enquiry' ? 'bg-white text-black font-bold' : 'hover:bg-gray-700'}`}
+            onClick={() => handleTabClick('Propert Enquiry')}
+          >
+             <FaHome className="w-6 h-6 mr-2" />
+            Property Enquiry
           </li>
         </ul>
       </div>

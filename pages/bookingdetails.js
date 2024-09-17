@@ -22,7 +22,26 @@ const Billing = () => {
         }
 
         snapshot.forEach((doc) => {
-          setBookingData(doc.data());
+          const data = doc.data();
+          
+          // Calculate checkOutDate based on paymentOption
+          let checkOutDate;
+          if (data.paymentOption === 'oneday') {
+            checkOutDate = dayjs(data.OrderDate).add(1, 'day').format('DD-MM-YYYY');
+          } else if (data.paymentOption === 'threeday') {
+            checkOutDate = dayjs(data.OrderDate).add(3, 'days').format('DD-MM-YYYY');
+          } else if (data.paymentOption === 'allday') {
+            checkOutDate = dayjs(data.OrderDate).add(1, 'month').format('DD-MM-YYYY');
+          }
+
+          // Add checkOutDate to bookingDate object
+          data.checkOutDate = checkOutDate;
+
+          // Add an expired field based on current date
+          const currentDate = dayjs().format('DD-MM-YYYY');
+          data.isExpired = dayjs(currentDate).isAfter(dayjs(checkOutDate));
+
+          setBookingData(data);
         });
 
         setLoading(false);
@@ -37,11 +56,13 @@ const Billing = () => {
     }
   }, [orderId]);
 
-  console.log("Bookingdetails",bookingData)
+  console.log("Bookingdetails", bookingData);
 
   const handlePrint = () => {
     window.print();
   };
+
+
 
   if (loading) {
     return (
@@ -73,11 +94,7 @@ const Billing = () => {
     return <div>No booking found for orderId: {orderId}</div>;
   }
 
-  const duePayment = bookingData.totalpayment - bookingData.Payment;
-  const start = dayjs(bookingData.checkInDate);
-  const end = dayjs(bookingData.checkOutDate);
-  const totalDays = end.diff(start, 'days') || 1;
-  const subtotal = bookingData.totalDays * bookingData.roomprice;
+ 
 
   return (
     <div className="min-h-screen py-12">
@@ -154,15 +171,24 @@ const Billing = () => {
 
               <dl className="grid sm:flex gap-x-3 text-sm">
                 <dt className="min-w-36 max-w-[200px] text-gray-500">Check In date:</dt>
-                <dd className="font-medium text-gray-800 dark:text-gray-200">{bookingData.bookingDate.checkInDate}</dd>
+                <dd className="font-medium text-gray-800 dark:text-gray-200">{bookingData.checkInDate}</dd>
               </dl>
-              {bookingData.bookingDate.checkOutDate && (
+              {bookingData.checkOutDate && (
   <dl className="grid sm:flex gap-x-3 text-sm">
     <dt className="min-w-36 max-w-[200px] text-gray-500">Check Out date:</dt>
-    <dd className="font-medium text-gray-800 dark:text-gray-200">{bookingData.bookingDate.checkOutDate}</dd>
+    <dd className="font-medium text-gray-800 dark:text-gray-200">{bookingData.checkOutDate}</dd>
   </dl>
 )}
-
+ <dl className="grid sm:flex gap-x-3 text-sm">
+                <dt className="min-w-36 max-w-[200px] text-gray-500">Status:</dt>
+                <dd className="font-medium text-gray-800 dark:text-gray-200">
+                  {bookingData.isExpired ? (
+                    <span className="text-red-600 font-semibold">Expired</span>
+                  ) : (
+                    <span className="text-green-600 font-semibold">Active</span>
+                  )}
+                </dd>
+              </dl>
             </div>
           </div>
         </div>
@@ -193,8 +219,11 @@ const Billing = () => {
                 <td className="px-3 py-2 whitespace-nowrap">{bookingData.Propertyname}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{bookingData.roomType}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{bookingData.Location}</td>
-                <td className="px-3 py-2 whitespace-nowrap">₹{bookingData.roomprice}</td>
-                <td className="px-3 py-2 text-right whitespace-nowrap">₹{bookingData.Payment}</td>
+                <td className="px-3 py-2 whitespace-nowrap">
+  {bookingData.totalDays ? `₹${bookingData.roomprice}*${bookingData.totalDays} Days` : ""}
+</td>
+
+                <td className="px-3 py-2 text-right whitespace-nowrap">₹{bookingData.amountpaid}</td>
               </tr>
             </tbody>
           </table>
@@ -206,18 +235,32 @@ const Billing = () => {
               <dl className="grid sm:grid-cols-5 gap-x-3 text-sm">
                 <dt className="col-span-3 text-gray-500">Subtotal:</dt>
                 <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">
-                  {bookingData.totalDays ? `Total Days * Room Price: ${bookingData.totalDays} * ${bookingData.roomprice} = ₹${subtotal}` : `₹${bookingData.totalpayment}`}
+                ₹{bookingData.totalPrice}
                 </dd>
               </dl>
 
               <dl className="grid sm:grid-cols-5 gap-x-3 text-sm">
                 <dt className="col-span-3 text-gray-500">Amount paid:</dt>
-                <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">₹{bookingData.Payment}</dd>
+                <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">₹{bookingData.amountpaid}</dd>
               </dl>
+              <dl className="grid sm:grid-cols-5 gap-x-3 text-sm">
+  <dt className="col-span-3 text-gray-500">Saving:</dt>
+  <dd className="col-span-2 font-medium text-green-600 dark:text-gray-200">
+    -₹{bookingData.savings ? bookingData.savings : "0"}
+  </dd>
+</dl>
+
+              {/* <dl className="grid sm:grid-cols-5 gap-x-3 text-sm">
+  <dt className="col-span-3 text-gray-500">Donation:</dt>
+  <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">
+  ₹{bookingData.includeDonation ? "+1" : "0"}
+  </dd>
+</dl> */}
+
 
               <dl className="grid sm:grid-cols-5 gap-x-3 text-sm">
-                <dt className="col-span-3 text-gray-500">Due payment:</dt>
-                <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">₹{duePayment.toFixed(2)}</dd>
+                <dt className="col-span-3 text-gray-500">Pay at CheckIn:</dt>
+                <dd className="col-span-2 font-medium text-gray-800 dark:text-gray-200">₹{bookingData.payAtCheckIn}</dd>
               </dl>
             </div>
           </div>

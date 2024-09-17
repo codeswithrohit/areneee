@@ -17,6 +17,27 @@ const BuyProperty = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [formLoading, setFormLoading] = useState(false); // New state for form loading
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    propertyname: '',
+    propertylocation: '',
+    AgentId: '',
+    CallBack: "No"
+  });
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((authUser) => {
+      if (authUser) {
+        setUser(authUser);
+      } else {
+        setUser(null);
+        router.push('/signin'); // Redirect to sign-in page
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -35,7 +56,25 @@ const BuyProperty = () => {
     });
   }, []);
 
-  const [formData, setFormData] = useState({ name: '', phone: '' });
+  // Update formData when Buydetaildata changes
+  useEffect(() => {
+    if (Buydetaildata) {
+      const now = new Date();
+      const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`; // Format the date and time
+  
+      setFormData({
+        ...formData,
+        propertyname: Buydetaildata?.Propertyname || '',
+        propertylocation: Buydetaildata?.location || '',
+        userid: user?.uid || '',
+        CallBack:'NO',
+        Type:'Property',
+        confirmstatus:'Pending',
+        AgentId: Buydetaildata?.AgentId || '',
+        enquiryDate: formattedDate // Set the current date and time
+      });
+    }
+  }, [Buydetaildata]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,7 +86,7 @@ const BuyProperty = () => {
 
     try {
       const db = firebase.firestore();
-      await db.collection('Contact').add(formData);
+      await db.collection('PropertyData').add(formData);
       toast.success('Enquiry submitted successfully!');
     } catch (error) {
       console.error('Error submitting reservation:', error);

@@ -1,211 +1,10 @@
 import React, { useEffect, useState,Fragment } from 'react';
 import { firebase } from '../../Firebase/config';
 import Link from 'next/link';
-import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts";
-import { Listbox, Transition } from "@headlessui/react";
-import AdminNavbar from "../../components/AdminNavbar";
-const people = [
-  { name: "This weekly" },
-  { name: "This monthly" },
-  { name: "This yearly" },
-];
-const graphDropdown = [
-  { name: "Daily" },
-  { name: "Weekly" },
-  { name: "Monthly" },
-  { name: "Yearly" },
-];
-const resultDropdown = [{ name: "Full Result" }, { name: "Quarterly Results" }];
+import AdminNavbar from '../../components/AdminNavbar';
+import { FaUsers, FaHome, FaTshirt, FaUtensils } from 'react-icons/fa';
 
-const options = {
-  chart: {
-    type: "pie",
-    height: 120,
-    width: 128,
-  },
-  title: false,
-  series: [
-    {
-      name: "Data",
-      data: [[23], [13], [62]],
-    },
-  ],
-  exporting: {
-    enabled: false,
-  },
-  credits: {
-    enabled: false,
-  },
-  responsive: {
-    rules: [
-      {
-        condition: {
-          maxWidth: 100,
-        },
-      },
-    ],
-  },
-  legend: {
-    enabled: false,
-  },
-  plotOptions: {
-    pie: {
-      borderWidth: 0,
-      innerSize: "60%",
-      dataLabels: {
-        enabled: false,
-      },
-      showInLegend: true,
-      colors: ["#E5E5E5", "#18CDCA", "#4F80E1"],
-      states: {
-        hover: {
-          brightness: 0.1,
-        },
-      },
-    },
-  },
-};
-const options2 = {
-  chart: {
-    type: "column",
-    height: 150,
-  },
-  xAxis: {
-    categories: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  },
-  yAxis: {
-    lineColor: "transparent",
-    title: {
-      text: null,
-    },
-    labels: {
-      enabled: false,
-    },
-    gridLineWidth: 2,
-  },
-  title: false,
-  series: [
-    {
-      name: "Vision",
-      data: [5, 3, 4, 7, 2, 6, 8],
-    },
-    {
-      name: "Sales",
-      data: [2, 2, 2, 2, 1, 8, 10],
-    },
-  ],
-  responsive: {
-    rules: [
-      {
-        condition: {
-          maxWidth: 500,
-        },
-      },
-    ],
-  },
-  exporting: {
-    enabled: false,
-  },
-  credits: {
-    enabled: false,
-  },
-  legend: {
-    align: "left",
-    verticalAlign: "top",
-    x: -14,
-    y: -12,
-    enabled: true,
-  },
-  plotOptions: {
-    pie: {
-      borderWidth: 0,
-      innerSize: "60%",
-      dataLabels: {
-        enabled: false,
-      },
-      showInLegend: true,
-      colors: ["#18CDCA", "#4F80E1"],
-      states: {
-        hover: {
-          brightness: 0.1,
-        },
-      },
-    },
-  },
-};
-
-
-const DropDowns = ({ list }) => {
-  const [selected, setSelected] = useState(list[0]);
-  return (
-    <Listbox value={selected} onChange={setSelected}>
-      <div className="relative mt-1">
-        <Listbox.Button className="py-2.5 px-2 border border-[#E7E7E7] flex justify-center items-center gap-1 rounded text-sm text-[#637381] font-normal">
-          <span className="block truncate">{selected.name}</span>{" "}
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="14" height="14" fill="white" />
-            <path
-              d="M11 5L7.5 8.5L4 5"
-              stroke="#637381"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Listbox.Button>
-        <Transition
-          as={Fragment}
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <Listbox.Options className="absolute mt-1 z-50 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm min-w-[100px]">
-            {list?.map((person, personIdx) => (
-              <Listbox.Option
-                key={personIdx}
-                className={({ active }) =>
-                  `relative cursor-default select-none py-2 pl-2 pr-4 ${
-                    active ? "bg-[#F6F8FA] text-gray-900" : "text-gray-900"
-                  }`
-                }
-                value={person}
-              >
-                {({ selected }) => (
-                  <span
-                    className={`block truncate ${
-                      selected
-                        ? "font-medium text-[#212B36]"
-                        : "font-normal text-[#637381]"
-                    }`}
-                  >
-                    {person.name}
-                  </span>
-                )}
-              </Listbox.Option>
-            ))}
-          </Listbox.Options>
-        </Transition>
-      </div>
-    </Listbox>
-  );
-};
-const Dashbord = () => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [openSideBar, setOpenSieBar] = useState(true);
-  const changeSideBar = () => {
-    setOpenSieBar(!openSideBar);
-  };
-  const showMenuItems = () => {
-    setShowMenu(!showMenu);
-  };
-
+const Index = () => {
   const [bookings, setBookings] = useState(null);
   const [todaybookings, setTodayBookings] = useState(null);
   const [cheforder, setCheforder] = useState(null);
@@ -319,12 +118,11 @@ const Dashbord = () => {
   const Totalcheforder = cheforder ? cheforder.length : 0;
   const Totallaundryorder = laundryorder ? laundryorder.length : 0;
   const Totaluser = registration ? registration.length : 0;
-  
   return (
-    <div className="min-h-[100vh] bg-[#F6F8FA]  w-full nourd-text admin-dashboard">
-         <AdminNavbar/>
-        <div className="lg:ml-64" >
-        {loading ? (
+    <div className="min-h-[100vh] bg-white w-full nourd-text admin-dashboard">
+      <AdminNavbar />
+      <div className="lg:ml-64">
+      {loading ? (
           <div className="flex justify-center items-center h-screen">
        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-12 h-12 animate-spin"
        viewBox="0 0 16 16">
@@ -335,280 +133,83 @@ const Dashbord = () => {
    </svg>
    </div>
       ) : (
-      <div
-        className={`w-full flex ${
-          showMenu ? "overflow-hidden h-screen" : "sm:overflow-auto"
-        }`}
-      >
-     
-        <div className="w-full flex flex-col">
-       
-          <div className="w-full py-3 pl-7 pr-5 grid xl:grid-cols-12 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-5 justify-start">
-          <div
-                className="p-5 h-36 xl:col-span-3 bg-white flex flex-col max-w-xs 2xl:max-w-none w-full rounded-xl gap-2 border border-[#E7E7E7] hover:shadow-xl cursor-pointer"
-              
-              >
-                <div
-                  className={`flex justify-between ${
-                    openSideBar ? " sm:flex-col md:flex-row" : " sm:flex-row"
-                  }`}
-                >
-                  <span className="text-[#637381] text-sm font-medium">
-                    Total Users
-                  </span>
-                
-                </div>
-                <div
-                  className={`flex gap-4  justify-between ${
-                    openSideBar
-                      ? "flex-wrap sm:flex-col md:flex-row items-end md:flex-nowrap"
-                      : "flex-nowrap items-center"
-                  }`}
-                >
-                  <span className="text-2xl font-bold whitespace-nowrap">
-                   {Totaluser}
-                  </span>
-                
-                </div>
-              </div>
-          <div
-                className="p-5 h-36 xl:col-span-3 bg-white flex flex-col max-w-xs 2xl:max-w-none w-full rounded-xl gap-2 border border-[#E7E7E7] hover:shadow-xl cursor-pointer"
-              
-              >
-                <div
-                  className={`flex justify-between ${
-                    openSideBar ? " sm:flex-col md:flex-row" : " sm:flex-row"
-                  }`}
-                >
-                  <span className="text-[#637381] text-sm font-medium">
-                    Total Booking
-                  </span>
-                
-                </div>
-                <div
-                  className={`flex gap-4  justify-between ${
-                    openSideBar
-                      ? "flex-wrap sm:flex-col md:flex-row items-end md:flex-nowrap"
-                      : "flex-nowrap items-center"
-                  }`}
-                >
-                  <span className="text-2xl font-bold whitespace-nowrap">
-                    {Totalorder}
-                  </span>
-                
-                </div>
-              </div>
-          <div
-                className="p-5 h-36 xl:col-span-3 bg-white flex flex-col max-w-xs 2xl:max-w-none w-full rounded-xl gap-2 border border-[#E7E7E7] hover:shadow-xl cursor-pointer"
-              
-              >
-                <div
-                  className={`flex justify-between ${
-                    openSideBar ? " sm:flex-col md:flex-row" : " sm:flex-row"
-                  }`}
-                >
-                  <span className="text-[#637381] text-sm font-medium">
-                    Total Arene laundry booking
-                  </span>
-                
-                </div>
-                <div
-                  className={`flex gap-4  justify-between ${
-                    openSideBar
-                      ? "flex-wrap sm:flex-col md:flex-row items-end md:flex-nowrap"
-                      : "flex-nowrap items-center"
-                  }`}
-                >
-                  <span className="text-2xl font-bold whitespace-nowrap">
-                   {Totallaundryorder}
-                  </span>
-                
-                </div>
-              </div>
-          <div
-                className="p-5 h-36 xl:col-span-3 bg-white flex flex-col max-w-xs 2xl:max-w-none w-full rounded-xl gap-2 border border-[#E7E7E7] hover:shadow-xl cursor-pointer"
-              
-              >
-                <div
-                  className={`flex justify-between ${
-                    openSideBar ? " sm:flex-col md:flex-row" : " sm:flex-row"
-                  }`}
-                >
-                  <span className="text-[#637381] text-sm font-medium">
-                    Total Arene Chef Order
-                  </span>
-                
-                </div>
-                <div
-                  className={`flex gap-4  justify-between ${
-                    openSideBar
-                      ? "flex-wrap sm:flex-col md:flex-row items-end md:flex-nowrap"
-                      : "flex-nowrap items-center"
-                  }`}
-                >
-                  <span className="text-2xl font-bold whitespace-nowrap">
-                    {Totalcheforder}
-                  </span>
-                
-                </div>
-              </div>
-          
-
-
-
-
-
-
-            {/* <div className="px-4 pt-4 pb-7 bg-white flex-col gap-1 justify-between  w-full max-h-64 xl:col-span-3 xl:row-start-2 lg:row-start-3 rounded-xl border border-[#E7E7E7]">
-              <span className="text-[#212B36] text-base font-semibold -tracking-[0.15px]">
-                Customer Volume
-              </span>
-              <div className="flex justify-between sm:flex-col md:flex-row max-w-xs 2xl:max-w-none h-full max-h-60 md:pb-5">
-                <div className="sm:mt-2 md:mt-0 self-center md:self-end">
-                  <div className="flex gap-1 items-center">
-                    <div className="h-2 w-3 bg-[#497AF9] rounded-sm"></div>
-                    <div className="text-[10px] flex gap-1">
-                      <span className="">62%</span>
-                      <span className="text-[#637381]">New</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 items-center">
-                    <div className="h-2 w-3 bg-[#18CDCA] rounded-sm"></div>
-                    <div className="text-[10px] flex gap-1">
-                      <span>13% </span>
-                      <span className="text-[#637381]">Returning</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 items-center">
-                    <div className="h-2 w-3 bg-[#000000]/20 rounded-sm"></div>
-                    <div className="text-[10px] flex gap-1">
-                      <span>23%</span>
-                      <span className="text-[#637381]">Inactive</span>
-                    </div>
-                  </div>
-                </div>
-                <HighchartsReact highcharts={Highcharts} options={options} />
-              </div>
+        <div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 p-4 gap-4">
+          <div className="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+            <div className="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+              <FaUsers className="text-blue-800 dark:text-gray-800 text-3xl transition-transform duration-500 ease-in-out" />
             </div>
-            <div className="px-4 py-4 bg-white flex-col sm:col-span-2 w-full max-h-64 xl:col-span-6 xl:row-start-2 lg:row-start-3 rounded-xl border border-[#E7E7E7] ">
-              <div className="flex flex-col justify-between">
-                <div className="flex items-center justify-between ">
-                  <span className="text-[#212B36] text-base font-semibold -tracking-[0.15px] whitespace-nowrap">
-                    Sales Volume
-                  </span>
-                  <div className="sm:flex gap-2 items-center hidden">
-                    <span className="text-sm font-medium text-[#212B36] -tracking-[0.15px] cursor-pointer">
-                      Daily
-                    </span>
-                    <span className="text-[#637381] text-sm font-medium -tracking-[0.15px] cursor-pointer">
-                      Weekly
-                    </span>
-                    <span className="text-[#637381] text-sm font-medium -tracking-[0.15px] cursor-pointer">
-                      Monthly
-                    </span>
-                    <span className="text-[#637381] text-sm font-medium -tracking-[0.15px] cursor-pointer">
-                      Yearly
-                    </span>
-                  </div>
-                  <div className=" block sm:hidden">
-                    <DropDowns list={graphDropdown} />
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  <div className=" w-full  h-full">
-                    <HighchartsReact
-                      highcharts={Highcharts}
-                      options={options2}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div> */}
-            <div className="xl:row-span-2 row-span-1 lg:row-start-4 bg-white py-5 xl:col-span-3 px-3 flex flex-col gap-5 h-full rounded-xl border border-[#E7E7E7]">
-              <span className="text-sm text-[#212B36] font-semibold -tracking-[0.15px]">
-                New Messages
-              </span>
-              <div className="flex flex-col gap-5">
-                {/* {messages?.map((data, index) => (
-                  <div key={index} className="flex gap-3.5">
-                    <div className="">
-                      <img src={data?.image} alt={data?.alt} />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-base font-medium text-[#212B36] cursor-pointer">
-                        {data?.name}
-                      </span>
-                      <span className="text-sm font-normal text-[#637381] cursor-pointer">
-                        {data?.message}
-                      </span>
-                    </div>
-                  </div>
-                ))} */}
-              </div>
+            <div className="text-right">
+              <p className="text-2xl">{Totaluser}</p>
+              <p>Total Users</p>
             </div>
-            <div className="p-3 bg-white flex flex-col xl:col-span-9 xl:row-auto lg:row-start-4 lg:col-span-2 rounded-xl border border-[#E7E7E7]">
-              <div className="flex items-center justify-between flex-wrap gap-1">
-                <span className="text-[#212B36] text-base font-semibold -tracking-[0.15px] whitespace-nowrap">
-                 Today Bookings
-                </span>
-               
-              </div>
-              <div className="w-full overflow-x-scroll md:overflow-auto max-w-xl xs:max-w-xl sm:max-w-xl md:max-w-8xl 2xl:max-w-none mt-1">
-              <table className="min-w-full divide-y divide-gray-200 font-[sans-serif]">
-                       <thead className="bg-gray-100 whitespace-nowrap">
-                         <tr>
-                           <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                             Customer Name
-                           </th>
-                           <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                             Order Details
-                           </th>
-                           <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                             Payment
-                           </th>
-                           <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                             Booking Date
-                           </th>
-                           <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                             Actions
-                           </th>
-                         </tr>
-                       </thead>
-                       <tbody className="bg-white divide-y divide-gray-200 whitespace-nowrap">
-                       {todaybookings.length === 0 && (
+          </div>
+          <div className="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+            <div className="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+              <FaHome className="text-blue-800 dark:text-gray-800 text-3xl transition-transform duration-500 ease-in-out" />
+            </div>
+            <div className="text-right">
+              <p className="text-2xl">{Totalorder}</p>
+              <p>Total Property Booking</p>
+            </div>
+          </div>
+          <div className="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+            <div className="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+              <FaTshirt className="text-blue-800 dark:text-gray-800 text-3xl transition-transform duration-500 ease-in-out" />
+            </div>
+            <div className="text-right">
+              <p className="text-2xl">{Totallaundryorder}</p>
+              <p>Total Laundry Order</p>
+            </div>
+          </div>
+          <div className="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+            <div className="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+              <FaUtensils className="text-blue-800 dark:text-gray-800 text-3xl transition-transform duration-500 ease-in-out" />
+            </div>
+            <div className="text-right">
+              <p className="text-2xl">{Totalcheforder}</p>
+              <p>Total Chef Order</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 mx-4">
+          <h1 className='text-lg text-center font-bold font-mono' >Today Property Booking</h1>
+          <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3"> Customer Name</th>
+                    <th class="px-4 py-3"> Order Details</th>
+                    <th class="px-4 py-3">Payment</th>
+                    <th class="px-4 py-3">Booking Date</th>
+                    <th class="px-4 py-3"> Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {todaybookings.length === 0 && (
   <tr>
     <td colSpan="6" className="px-6 py-4 text-center text-[#333]">
       Today, there are no orders.
     </td>
   </tr>
 )}
-
-                         {todaybookings &&
+  {todaybookings &&
                            todaybookings.map((booking) => (
-                             <tr key={booking.id}>
-                               <td className="px-2 py-4 text-xs text-[#333]">
-                                 {booking.Name}
-                               </td>
-                               <td className="px-2 py-4 text-xs text-[#333]">
-                                 {booking.GarmentTypes ? (
-                                   // If GarmentTypes available, show the data
-                                   JSON.parse(booking.GarmentTypes).map((garment, index) => (
-                                     <div key={index}>
-                                       <p>No. of Garments: {garment.noofgarments}</p>
-                                       <p>Tenure: {garment.tenure}</p>
-                                       <p>Price: {garment.price}</p>
-                                     </div>
-                                   ))
-                                 ) : (
-                                   // If GarmentTypes not available, show order details
-                                   `${booking.Propertyname}-${booking.roomType}-${booking.roomprice}`
-                                 )}
-                               </td>
-                               <td className="px-2 py-4 text-xs text-[#333]">
-                                 {booking.Payment}
-                               </td>
-                               <td className="px-2 py-4 text-xs text-[#333]">
-                                 {booking.bookingDate instanceof Object ? (
+                  <tr key={booking.id} class="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center text-sm">
+                        
+                        <div>
+                          <p class="font-semibold"> {booking.Name}</p>
+                          {/* <p class="text-xs text-gray-600 dark:text-gray-400">10x Developer</p> */}
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">   `${booking.Propertyname}-${booking.roomType}-${booking.roomprice}`</td>
+                    <td class="px-4 py-3 text-xs">
+                    {booking.bookingDate instanceof Object ? (
                                    // If bookingDate is an object, extract checkIn or checkOut
                                    <>
                                      <p>Check In: {booking.bookingDate.checkIn}</p>
@@ -620,231 +221,148 @@ const Dashbord = () => {
                                    // If bookingDate is a string, display it directly
                                    <p>{booking.bookingDate}</p>
                                  )}
-                               </td>
-                               <td className="px-2 py-4 text-xs text-[#333]">
-                                 {booking.GarmentTypes ? (
-                                   <Link href={`/laundrybookingdetails?orderId=${booking.orderId}`}>
-                                     <a className="bg-blue-500 text-white px-2 py-1 rounded">View Details</a>
-                                   </Link>
-                                 ) : (
-                                   <Link href={`/Admin/adminorder?orderId=${booking.orderId}`}>
+                    </td>
+                    <td class="px-4 py-3 text-sm"><Link href={`/Admin/adminorder?orderId=${booking.orderId}`}>
                                      <a className="bg-blue-500 text-white px-2 py-1 rounded">Booking Details</a>
-                                   </Link>
-                                 )}
-                               </td>
-                             </tr>
+                                   </Link></td>
+                  </tr>
                            ))}
-                       </tbody>
-                     </table>
-              </div>
+
+                </tbody>
+              </table>
             </div>
-            <div className="p-3 bg-white flex flex-col xl:col-span-8 lg:row-start-5 xl:row-auto lg:col-span-2 rounded-xl border border-[#E7E7E7] h-max">
-              <div className="flex items-center justify-between flex-wrap gap-1">
-                <span className="text-[#212B36] text-base font-semibold -tracking-[0.15px] whitespace-nowrap">
-                  Today Arene Chef Order
-                </span>
-                
-              </div>
-              <div className="w-full overflow-x-scroll md:overflow-auto max-w-xl sm:max-w-xl md:max-w-3xl 2xl:max-w-none mt-1">
-              <table class="min-w-full divide-y divide-gray-200 font-[sans-serif]">
-    <thead class="bg-gray-100 whitespace-nowrap">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Customer Name
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-       Thalli Name
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Order Details
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Payment
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Booking Date
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Actions
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200 whitespace-nowrap">
-    {todaycheforder && todaycheforder.length === 0 && (
+      </div>
+    </div>
+
+
+    <div class="mt-4 mx-4">
+          <h1 className='text-lg text-center font-bold font-mono' >Today Laundry Booking</h1>
+          <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3"> Customer Name</th>
+                    <th class="px-4 py-3"> Service</th>
+                    <th class="px-4 py-3"> Order Details</th>
+                    <th class="px-4 py-3">  Payment</th>
+                    {/* <th class="px-4 py-3">Booking Date</th> */}
+                    <th class="px-4 py-3"> Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {todaylaundryorder && todaylaundryorder.length === 0 && (
   <tr>
     <td colSpan="6" className="px-6 py-4 text-center text-[#333]">
       Today, there are no orders.
     </td>
   </tr>
 )}
-
-
-    {todaycheforder && todaycheforder.map(booking => (
-      <tr key={booking.id} >
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.firstName} {booking.lastName}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.thaliname}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        <div>
-                    <p>No. of Thalli: {booking.noofthalli}</p>
-                    <p>Tenure: {booking.selectedTenure}</p>
-                    <p>Price: {booking.Foodcharge}</p>
-                </div>
-        
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.Payment}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.bookingDate instanceof Object ? (
-    // If bookingDate is an object, extract checkIn or checkOut
-    <>
-        <p>Check In: {booking.bookingDate.checkIn}</p>
-        {booking.bookingDate.checkOut ? (
-            <p>Check Out: {booking.bookingDate.checkOut}</p>
-  ) : null}
-    </>
-) : (
-    // If bookingDate is a string, display it directly
-    <p>{booking.bookingDate}</p>
-)}
-
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.GarmentTypes ? (
-                                                                        <Link href={`/laundrybookingdetails?orderId=${booking.orderId}`}>
-                                                                            <a className="bg-blue-500 text-white px-2 py-1 rounded">
-                                                                                View Details
-                                                                            </a>
-                                                                        </Link>
-                                                                    ) : (
-                                                                        <Link href={`/Admin/adminarenechefdetails?orderId=${booking.orderId}`}>
-                                                                            <a className="bg-blue-500 text-white px-2 py-1 rounded">
-                                                                                Booking Details
-                                                                            </a>
-                                                                        </Link>
-                                                                    )}
-                                                                    {/* <button onClick={() => openModal(booking)} className="bg-blue-500 ml-4 text-white px-2 py-1 rounded">
-                                                                                Update Orders Delivery
-                                                                            </button> */}
-        </td>
-       
-      </tr>
-    ))}
-    </tbody>
-  </table>
-              </div>
-            </div>
-            <div className="p-3 bg-white flex flex-col xl:col-span-8 lg:row-start-5 xl:row-auto lg:col-span-2 rounded-xl border border-[#E7E7E7] h-max">
-              <div className="flex items-center justify-between flex-wrap gap-1">
-                <span className="text-[#212B36] text-base font-semibold -tracking-[0.15px] whitespace-nowrap">
-                  Today Arene Laundry Order
-                </span>
-                
-              </div>
-              <div className="w-full overflow-x-scroll md:overflow-auto max-w-xl sm:max-w-xl md:max-w-3xl 2xl:max-w-none mt-1">
-              <table class="min-w-full divide-y divide-gray-200 font-[sans-serif]">
-    <thead class="bg-gray-100 whitespace-nowrap">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Customer Name
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-     Service
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Order Details
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Payment
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Booking Date
-        </th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Actions
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200 whitespace-nowrap">
-    {todaylaundryorder && todaylaundryorder.length === 0 && (
-  <tr>
-    <td colSpan="6" className="px-6 py-4 text-center text-[#333]">
-      Today, there are no orders.
-    </td>
-  </tr>
-)}
-
-
-    {todaylaundryorder && todaylaundryorder.map(booking => (
-      <tr key={booking.id} >
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.firstName} {booking.lastName}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.Service}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        <div>
+  {todaylaundryorder &&
+                           todaylaundryorder.map((booking) => (
+                  <tr key={booking.id} class="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center text-sm">
+                        
+                        <div>
+                          <p class="font-semibold"> {booking.firstName} {booking.lastName}</p>
+                          {/* <p class="text-xs text-gray-600 dark:text-gray-400">10x Developer</p> */}
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">   {booking.Service}</td>
+                    <td class="px-4 py-3 text-xs">
+                    <div>
                     <p>No. of Garments: {booking.Noofgarment}</p>
                     <p>Tenure: {booking.selectedTenure}</p>
                     <p>Price: {booking.totalpayment}</p>
                 </div>
-        
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.Payment}
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.bookingDate instanceof Object ? (
-    // If bookingDate is an object, extract checkIn or checkOut
-    <>
-        <p>Check In: {booking.bookingDate.checkIn}</p>
-        {booking.bookingDate.checkOut ? (
-            <p>Check Out: {booking.bookingDate.checkOut}</p>
-  ) : null}
-    </>
-) : (
-    // If bookingDate is a string, display it directly
-    <p>{booking.bookingDate}</p>
-)}
-
-        </td>
-        <td class="px-6 py-4 text-sm text-[#333]">
-        {booking.GarmentTypes ? (
-                                                                        <Link href={`/Admin/adminarenelaundrydetails?orderId=${booking.orderId}`}>
-                                                                            <a className="bg-blue-500 text-white px-2 py-1 rounded">
-                                                                                View Details
-                                                                            </a>
-                                                                        </Link>
-                                                                    ) : (
-                                                                        <Link href={`/Admin/adminarenelaundrydetails?orderId=${booking.orderId}`}>
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                    {booking.Payment}
+                    </td>
+                    <td class="px-4 py-3 text-sm"> <Link href={`/Admin/adminarenelaundrydetails?orderId=${booking.orderId}`}>
                                                                             <a className="bg-blue-500 text-white px-2 py-1 rounded">
                                                                                 Booking Details
                                                                             </a>
-                                                                        </Link>
-                                                                    )}
-                                                                    {/* <button onClick={() => openModal(booking)} className="bg-blue-500 ml-4 text-white px-2 py-1 rounded">
-                                                                                Update Orders Delivery
-                                                                            </button> */}
-        </td>
-       
-      </tr>
-    ))}
-    </tbody>
-  </table>
-              </div>
+                                                                        </Link></td>
+                  </tr>
+                           ))}
+
+                </tbody>
+              </table>
             </div>
-           
-          </div>
-        </div>
       </div>
+    </div>
+
+
+    <div class="mt-4 mx-4">
+          <h1 className='text-lg text-center font-bold font-mono' >Today Chef Booking</h1>
+          <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3"> Customer Name</th>
+                    <th class="px-4 py-3">  Thalli Name</th>
+                    <th class="px-4 py-3"> Order Details</th>
+                    <th class="px-4 py-3">  Payment</th>
+                    {/* <th class="px-4 py-3">Booking Date</th> */}
+                    <th class="px-4 py-3"> Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {todaycheforder && todaycheforder.length === 0 && (
+  <tr>
+    <td colSpan="6" className="px-6 py-4 text-center text-[#333]">
+      Today, there are no orders.
+    </td>
+  </tr>
+)}
+  {todaycheforder && todaycheforder.map(booking => (
+                  <tr key={booking.id} class="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center text-sm">
+                        
+                        <div>
+                          <p class="font-semibold"> {booking.firstName} {booking.lastName}</p>
+                          {/* <p class="text-xs text-gray-600 dark:text-gray-400">10x Developer</p> */}
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">  {booking.thaliname}</td>
+                    <td class="px-4 py-3 text-xs">
+                    <div>
+                    <p>No. of Thalli: {booking.noofthalli}</p>
+                    <p>Tenure: {booking.selectedTenure}</p>
+                    <p>Price: {booking.Foodcharge}</p>
+                </div>
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                    {booking.Payment}
+                    </td>
+                    <td class="px-4 py-3 text-sm"><Link href={`/Admin/adminarenechefdetails?orderId=${booking.orderId}`}>
+                                                                            <a className="bg-blue-500 text-white px-2 py-1 rounded">
+                                                                                Booking Details
+                                                                            </a>
+                                                                        </Link></td>
+                  </tr>
+                           ))}
+
+                </tbody>
+              </table>
+            </div>
+      </div>
+    </div>
+
+
+
+
+    </div>
       )}
-      </div>
+    </div>
     </div>
   );
 };
-export default Dashbord;
+
+export default Index;

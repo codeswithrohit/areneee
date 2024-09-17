@@ -55,7 +55,7 @@ const RentDetailsViewCard = () => {
     if (selectedRoom && dateRange.startDate) {
       const formattedDate = moment(dateRange.startDate).format('DD-MM-YYYY');
       router.push({
-        pathname: '/booking',
+        pathname: '/rentbooking',
         query: {
           Name: rentdetaildata.Propertyname,
           Agentid: rentdetaildata.AgentId,

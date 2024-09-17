@@ -77,7 +77,11 @@ const HotelDetailsViewCard = () => {
     price: room.price,
     availability: room.availability
   })) : [];
-
+  const disabledDate = (current) => {
+    const today = moment();
+    const nextMonth = moment().add(1, 'month');
+    return current < today || current > nextMonth;
+  };
   return (
     <div className='py-4'>
       {isLoading ? (
@@ -139,6 +143,7 @@ const HotelDetailsViewCard = () => {
                   format="YYYY-MM-DD"
                   placeholder="Check-in Date"
                   style={{ width: '100%' }}
+                  disabledDate={disabledDate}
                 />
               </div>
               <div className="mb-4">

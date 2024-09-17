@@ -246,7 +246,7 @@ const HomeTab = () => {
   <div className="relative z-10 max-w-[90%] lg:max-w-[85%] mx-auto grid place-content-center h-full">
     <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-1 gap-8 place-content-center">
       <div>
-        <h1 className='text-4xl font-bold font-mono text-center text-gray-900 mt-8'> Discover your perfect stay around the India</h1>
+        <h1 className='text-4xl font-bold font-mono text-center text-pink-600 mt-8'> Discover your perfect stay around the India</h1>
         <div className="flex justify-center">
       <h2 className="text-xl flex items-center space-x-2">
         <FaMapMarkerAlt className="text-red-500" />
@@ -280,7 +280,7 @@ const HomeTab = () => {
           className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab4' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}
           onClick={() => handleTabChange('tab4')}
         >
-         ARENE HOTEL
+         ARENE ROOM
         </button>
         <button
           className={`flex-1 p-1 text-xs font-mono font-bold text-center ${activeTab === 'tab5' ? 'bg-[#43d3b1] text-white' : 'bg-gray-200 text-gray-700'}`}

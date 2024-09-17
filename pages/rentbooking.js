@@ -20,7 +20,7 @@ const Booking = () => {
   const [includeDonation, setIncludeDonation] = useState(true);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
-  const { Name,  roomType, roomprice, Agentid, location,checkInDate,checkOutDate,totalPrice,totalDays } = router.query;
+  const { Name, roomType, roomprice, Agentid, location, checkInDate } = router.query;
   const [couponCode, setCouponCode] = useState("");
   const [couponData, setCouponData] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -165,22 +165,21 @@ const Booking = () => {
         address: address,
         phoneNumber: mobilenumber,
         email: email,
-        roomprice: roomprice || "",
-        totalPrice: totalPrice || "",
-        savings: savings || "",
-        includeDonation: includeDonation || "",
-        amountpaid: paymentAmount || "",
-        payAtCheckIn: payAtCheckIn || "",
-        Totalpayment: total || "",        
         Propertyname: Name,
         Location: location,
         roomType: roomType,
-        totalDays:totalDays,
+        savings:savings,
+        roomprice: roomprice,
         Agentid: Agentid,
         Userid: user.uid,
         OrderDate: currentDate,
-        checkInDate: checkInDate,
-        checkOutDate:checkOutDate
+        Totalpayment: total,
+        payAtCheckIn: payAtCheckIn,
+        Payment: paymentAmount,
+        totalpayment: roomprice,
+        bookingDate: {
+          checkInDate: checkInDate,
+        },
       });
       setLoading(false);
       router.push(`/bookingdetails?orderId=${orderId}`);
@@ -260,11 +259,11 @@ const Booking = () => {
 
   const getPaymentAmount = () => {
     // Increase the base amount by 15%
-    const roomprices = parseFloat(totalPrice);
-    const baseAmount = roomprices ;
+    const roomprices = parseFloat(roomprice);
+    const baseAmount = roomprices * 1.15;
   
     // Calculate 20% of the increased base amount
-    let paymentAmount = roomprices * 0.1;
+    let paymentAmount = roomprices * 0.2;
   
     if (includeDonation) {
       paymentAmount += 1; // Add 1 to paymentAmount if donation is included
@@ -417,13 +416,7 @@ const Booking = () => {
            <p class="text-base leading-6 text-gray-800 dark:text-gray-400 font-mono">Price: Rs.{roomprice}</p>
        </div>
        <div class="w-full px-4 mb-4 md:w-1/2">
-           <p class="text-base leading-6 text-gray-800 dark:text-gray-400 font-mono">Total Payment: Rs.{totalPrice}</p>
-       </div>
-       <div class="w-full px-4 mb-4 md:w-1/2">
-           <p class="text-base leading-6 text-gray-800 dark:text-gray-400 font-mono">Total Days:{totalDays}</p>
-       </div>
-       <div class="w-full px-4 mb-4 md:w-1/2">
-           <p class="text-base leading-6 text-gray-800 dark:text-gray-400 font-mono">Check In - CheckOut at::{checkInDate} - {checkOutDate}</p>
+           <p class="text-base leading-6 text-gray-800 dark:text-gray-400 font-mono">Check In at:{checkInDate}</p>
        </div>
    </div>
 </div>
@@ -460,7 +453,7 @@ const Booking = () => {
      <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
        <dl class="flex items-center justify-between gap-4 py-3">
          <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Subtotal</dt>
-         <dd class="text-base font-medium text-gray-900 dark:text-white">{totalPrice}</dd>
+         <dd class="text-base font-medium text-gray-900 dark:text-white">{roomprice}</dd>
        </dl>
 
        <dl class="flex items-center justify-between gap-4 py-3">
@@ -468,13 +461,13 @@ const Booking = () => {
          <dd class="text-base font-medium text-green-500">- ₹{savings.toFixed(2)}</dd>
        </dl>
 
-       {/* <dl class="flex items-center justify-between gap-4 py-3">
+       <dl class="flex items-center justify-between gap-4 py-3">
          <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Arene Service Charge</dt>
          <dd className="text-base font-medium text-gray-900 dark:text-white">
-  {parseFloat(roomprice) * 0.1}
+  {parseFloat(roomprice) * 0.15}
 </dd>
 
-       </dl> */}
+       </dl>
 
        <dl class="flex items-center justify-between gap-4 py-3">
          <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Donate</dt>

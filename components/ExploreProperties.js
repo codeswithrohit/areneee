@@ -52,7 +52,15 @@ const ExploreProperties = ({ locations }) => {
           };
         }));
 
-        setFetchedData(updatedData);
+        // Sort by distance
+        const sortedData = updatedData.sort((a, b) => {
+          if (a.distance && b.distance) {
+            return parseFloat(a.distance.replace(/[^0-9.-]+/g, '')) - parseFloat(b.distance.replace(/[^0-9.-]+/g, ''));
+          }
+          return 0;
+        });
+
+        setFetchedData(sortedData);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -191,69 +199,87 @@ const ExploreProperties = ({ locations }) => {
               <p className="text-lg text-gray-700">No properties available for this location.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {filteredData.map((item) => (
-                <div key={item.id} className="bg-white shadow-md rounded-lg overflow-hidden">
-                  <div className="relative">
-                  <div className="relative h-[240px] w-full">
-                    <Carousel
-                      showThumbs={false} // Hide thumbnails
-                      infiniteLoop // Infinite looping of the carousel
-                      useKeyboardArrows // Allow navigation using keyboard arrows
-                      autoPlay // Automatically play the carousel
-                      interval={3000} // Time interval between slides (in milliseconds)
-                    >
-                      {item.imgSrc.map((src, index) => (
-                        <div key={index} className="w-full h-full">
-                          <img src={src} alt="image" className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </Carousel>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            {filteredData.map((item) => (
+        <div key={item.id} className="bg-white shadow-md rounded-lg border-2 border-black overflow-hidden flex flex-col">
+        <div className="flex flex-col lg:flex-row flex-grow">
+          <div className="relative lg:w-1/2">
+            <div className="relative h-[240px] w-full">
+              <Carousel
+                showThumbs={false} // Hide thumbnails
+                infiniteLoop // Infinite looping of the carousel
+                useKeyboardArrows // Allow navigation using keyboard arrows
+                autoPlay // Automatically play the carousel
+                interval={3000} // Time interval between slides (in milliseconds)
+              >
+                {item.imgSrc.map((src, index) => (
+                  <div key={index} className="w-full h-64">
+                    <img src={src} alt="image" className="w-full h-64 object-cover" />
                   </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xl font-mono font-semibold text-center">
-                      {item.type === 'Resortdetail' ? item.ResortName :
-                       item.type === 'Banqueethalldetail' ? item.BanqueethallName :
-                       item.type === 'Hoteldetail' ? item.HotelName :
-                       item.type === 'pgdetail' ? item.PGName :
-                       item.type === 'buydetail' ? item.Propertyname :
-                       item.type === 'rentdetail' ? item.PropertyName : 'N/A'
-                      }
-                    </p>
-                    <div className="flex justify-center">
-                      <p className="text-sm text-gray-500 font-mono font-semibold flex text-center"><FaMapMarkerAlt className="text-red-500 mr-2" />{formatLocation(item.location)}</p>
-                    </div>
-                    {item.type === 'Banqueethalldetail' ? (
-                      <div className='flex'>
-                        <p className='font-mono text-center font-bold'><i className="fa-solid fa-utensils me-2"></i>Veg Plate: ₹{item.vegperplate || 'N/A'}</p>
-                        <p className='font-mono text-center font-bold'><i className="fa-solid fa-burger me-2"></i>Non-Veg Plate: ₹{item.nonvegperplate || 'N/A'}</p>
-                      </div>
-                    ) : item.type === 'Resortdetail' || item.type === 'Hoteldetail' || item.type === 'pgdetail' ? (
-                      <>
-                        {item.roomTypes && item.roomTypes.map((property, i) => (
-                          <div className='flex justify-center' key={i}>
-                            <p className='text-gray-900 font-bold font-mono'>{i + 1}. {property.type}-{property.price}</p>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <>
-                        {item.propertytypes.map((property, i) => (
-                          <div className='flex justify-center' key={i}>
-                            <span className="text-gray-900 font-bold font-mono">{i + 1}. {property.type} - {property.price}</span>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                    <p className='font-semibold font-mono text-center'>Distance: {item.distance ? item.distance : 'Calculating...'}</p>
-                    <div className='flex items-center justify-center  ' >
-                    <button  onClick={() => handleBookMeClick(item.type, item.id)} class="hover:brightness-80 hover:animate-pulse font-bold py-2 px-6 rounded-full bg-gradient-to-r from-emerald-200 to-emerald-800 text-white">Book Me</button>
-                      </div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </Carousel>
             </div>
+          </div>
+          <div className="p-4 lg:w-1/2 flex flex-col justify-between">
+            <div>
+              <p className="text-xl font-mono font-semibold text-center">
+                {item.type === 'Resortdetail' ? item.ResortName :
+                 item.type === 'Banqueethalldetail' ? item.BanqueethallName :
+                 item.type === 'Hoteldetail' ? item.HotelName :
+                 item.type === 'pgdetail' ? item.PGName :
+                 item.type === 'buydetail' ? item.Propertyname :
+                 item.type === 'rentdetail' ? item.Propertyname : 'N/A'
+                }
+              </p>
+              <div className="flex justify-center">
+                <p className="text-sm text-gray-500 font-mono font-semibold flex text-center">
+                  <FaMapMarkerAlt className="text-red-500 mr-2" />
+                  {formatLocation(item.location)}
+                </p>
+              </div>
+              {item.type === 'Banqueethalldetail' ? (
+                <div className='flex'>
+                  <p className='font-mono text-center font-bold'>
+                    <i className="fa-solid fa-utensils me-2"></i>Veg Plate: ₹{item.vegperplate || 'N/A'}
+                  </p>
+                  <p className='font-mono text-center font-bold'>
+                    <i className="fa-solid fa-burger me-2"></i>Non-Veg Plate: ₹{item.nonvegperplate || 'N/A'}
+                  </p>
+                </div>
+              ) : item.type === 'Resortdetail' || item.type === 'Hoteldetail' || item.type === 'pgdetail' ? (
+                <>
+                  {item.roomTypes && item.roomTypes.map((property, i) => (
+                    <div className='flex justify-center' key={i}>
+                      <p className='text-gray-900 font-bold font-mono'>{i + 1}. {property.type}-{property.price}</p>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {item.propertytypes.map((property, i) => (
+                    <div className='flex justify-center' key={i}>
+                      <span className="text-gray-900 font-bold font-mono">{i + 1}. {property.type} - {property.price}</span>
+                    </div>
+                  ))}
+                </>
+              )}
+              <p className='font-semibold font-mono text-center'>Distance: {item.distance ? item.distance : 'Calculating...'}</p>
+            </div>
+            <div className='flex items-center justify-center mt-auto'>
+              <button
+                onClick={() => handleBookMeClick(item.type, item.id)}
+                className="hover:brightness-80 hover:animate-pulse font-bold py-2 px-6 rounded-full bg-gradient-to-r from-emerald-200 to-emerald-800 text-white"
+              >
+                Book Me
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+            ))}
+          </div>
+          
           )}
         </div>
       </section>

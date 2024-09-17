@@ -1,691 +1,334 @@
-import React, { useState } from "react";
-import Link from "next/link";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-/* Install pure-react-carousel using -> npm i pure-react-carousel */
-import { firebase } from "../Firebase/config";
-import { useRouter } from "next/router";
-export default function AdminNavbar() {
-  const [show, setShow] = useState(true);
-  const router = useRouter();
+import React, { useState } from 'react';
+import { FaBars, FaTimes, FaUsers, FaCalendarAlt, FaList, FaChartLine } from 'react-icons/fa';
+import { MdArrowDropDown, MdArrowDropUp,MdAddHomeWork,MdOutlineLocalLaundryService } from 'react-icons/md';
+import { RiHomeSmileFill } from "react-icons/ri";
+import { SiCodechef } from "react-icons/si";
+import { BsMenuDown } from "react-icons/bs";
+import { BiLogOutCircle } from "react-icons/bi";
+const AdminNavbar = () => {
+  // State to manage the visibility of the sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dropdownUsersOpen, setDropdownUsersOpen] = useState(false);
+  const [dropdownlaundryOpen, setDropdownlaundryOpen] = useState(false);
+  const [dropdownchefOpen, setDropdownchefOpen] = useState(false);
+  const [dropdownothersOpen, setDropdownothersOpen] = useState(false);
+  const [dropdownPropertyOpen, setDropdownPropertyOpen] = useState(false);
 
+  // Toggle function for sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Toggle function for Users dropdown
+  const toggleUsersDropdown = () => {
+    setDropdownUsersOpen(!dropdownUsersOpen);
+  };
+
+  // Toggle function for Property dropdown
+  const togglePropertyDropdown = () => {
+    setDropdownPropertyOpen(!dropdownPropertyOpen);
+  };
+
+  const togglelaundryDropdown = () => {
+    setDropdownlaundryOpen(!dropdownlaundryOpen);
+  };
+  const togglechefDropdown = () => {
+    setDropdownchefOpen(!dropdownchefOpen);
+  };
+  const toggleothersDropdown = () => {
+    setDropdownothersOpen(!dropdownothersOpen);
+  };
 
   return (
-    <div className="z-30" >
-      <div className=" bg-white rounded-r shadow xl:hidden flex justify-between w-full p-6 items-center border-b border-transparent sm:border-gray-200 ">
-      <div className="flex cursor-pointer  site-brading">
-                
-                <Link legacyBehavior href="/">
-                  <img
-                    src="https://www.areneservices.in/public/front/images/property-logo.png"
-                    className="w-8 h-8 ml-2  "
-                    alt="Logo"
-                  />
-                </Link>
-              </div>
-        <div aria-label="toggler" className="flex justify-center items-center">
-          <button
-            id="open"
-            aria-label="open"
-            onClick={() => setShow(!show)}
-            className={`${
-              show ? "" : "hidden"
-            } focus:outline-none focus:ring-2 `}
-          >
-            <svg
-              className="text-indigo-200"
-              width={24}
-              height={24}
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4 6H20"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 12H20"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 18H20"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            id="close"
-            aria-label="close"
-            onClick={() => setShow(!show)}
-            className={`${
-              show ? "hidden" : ""
-            } focus:outline-none focus:ring-2  `}
-          >
-            <svg
-              className="text-indigo-200"
-              width={24}
-              height={24}
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
+    <div>
+      <button
+  onClick={toggleSidebar}
+  aria-controls="default-sidebar"
+  type="button"
+  className="inline-flex items-center p-2 mt-2 ml-3 text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+>
+  <span className="sr-only">Open sidebar</span>
+  <FaBars className="w-6 h-6" />
+</button>
 
-      <div
-        id="Main"
-        className={`${
-          show ? "-translate-x-full" : "translate-x-0"
-        } bg-indigo-700 transform  xl:translate-x-0 shadow xl:rounded-r fixed h-full top-22 sm:z-20 bg-white  ease-in-out transition duration-500 flex justify-start items-start w-full sm:w-64 flex-col `}
+      <h1 className='text-lg font-bold font-mono text-center underline'>Admin Panel</h1>
+      <aside
+        id="default-sidebar"
+        className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
+        aria-label="Sidenav"
       >
-       <div className="flex cursor-pointer mb-16 site-brading">
-                
-                <Link legacyBehavior href="/">
-                  <img
-                    src="https://www.areneservices.in/public/front/images/property-logo.png"
-                    className="w-8 h-8 ml-2  "
-                    alt="Logo"
-                  />
-                </Link>
-              </div>
-        <button className="focus:outline-none focus:text-white  focus:bg-indigo-900 flex justify-between  sm:w-auto items-center space-x-10 text-white mx-6  p-3 rounded hover:bg-indigo-900 bg-indigo-800 ">
-          <div className="flex justify-start  sm:w-auto items-center space-x-2">
-            <div>
-              <img
-                src="https://i.ibb.co/G2sDV5X/Ellipse-2-4.png"
-                alt="avatar"
-              />
-            </div>
-            
-          </div>
-          <svg
-            width={24}
-            height={24}
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className="overflow-y-auto py-5 px-3 h-full bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="absolute top-4 right-4 p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
           >
-            <path
-              d="M5 12H19"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13 18L19 12"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13 6L19 12"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <div class="fixed flex flex-col top-0 left-0 w-64 bg-white h-full border-r">
-          <div class="flex items-center justify-center h-14 border-b">
-          <div className="flex cursor-pointer site-brading">
-                
-                <Link legacyBehavior href="/">
-                  <img
-                    src="https://www.areneservices.in/public/front/images/property-logo.png"
-                    className="w-8 h-8 ml-2  "
-                    alt="Logo"
-                  />
-                </Link>
-              </div>
-          </div>
-          <div class="overflow-y-auto overflow-x-hidden flex-grow">
-            <ul class="flex flex-col py-4 space-y-1">
-              <li>
-                <a
-                  href="/Admin/dashboard"
-                  className={router.pathname === "/Admin/dashboard" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Dashboard
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/Users"
-                  className={router.pathname === "/Admin/Users" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Users</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/Agents"
-                  className={router.pathname === "/Admin/Agents" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Agents</span>
-                </a>
-              </li>
-
-
-              <li>
-                <a
-                  href="/Admin/CoupanCode"
-                  className={router.pathname === "/Admin/CoupanCode" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Coupan Code</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/AreneChefVendor"
-                  className={router.pathname === "/Admin/AreneChefVendor" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Arene Chef Vendor</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/ArenelaundryVendor"
-                  className={router.pathname === "/Admin/ArenelaundryVendor" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Arene laundry Vendor</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/Deliveryboy"
-                  className={router.pathname === "/Admin/Deliveryboy" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">Delivery Boy</span>
-                </a>
-              </li>
-           
-              
-              <li>
-                <a
-                  href="/Admin/Order"
-                  className={router.pathname === "/Admin/Order" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Orders
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/PGData"
-                  className={router.pathname === "/Admin/PGData" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+            <span className="sr-only">Close sidebar</span>
+            <FaTimes className="w-6 h-6" />
+          </button>
+          <ul className="space-y-2">
+            <h1 className='text-lg font-bold font-mono text-center underline'>Admin Panel</h1>
+            <li>
+              <a
+                href="/Admin"
+                className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <FaChartLine className="w-6 h-6 text-gray-400 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                <span className="ml-3">Overview</span>
+              </a>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                onClick={toggleUsersDropdown}
+              >
+                <FaUsers className="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
+                <span className="flex-1 ml-3 text-left whitespace-nowrap">Users</span>
+                {dropdownUsersOpen ? (
+                  <MdArrowDropUp className="w-6 h-6" />
+                ) : (
+                  <MdArrowDropDown className="w-6 h-6" />
+                )}
+              </button>
+              <ul
+                id="dropdown-Users"
+                className={`py-2 space-y-2 ${dropdownUsersOpen ? 'block' : 'hidden'}`}
+              >
+                <li>
+                  <a
+                    href="/Admin/Users"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    Users
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/AreneChefVendor"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    Arene Chef Vendor
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/ArenelaundryVendor"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                 Arene Laundry vendor
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/Deliveryboy"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                 Delivery Boy
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                onClick={togglePropertyDropdown}
+              >
+                <MdAddHomeWork className="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
+                <span className="flex-1 ml-3 text-left whitespace-nowrap">Property</span>
+                {dropdownPropertyOpen ? (
+                  <MdArrowDropUp className="w-6 h-6" />
+                ) : (
+                  <MdArrowDropDown className="w-6 h-6" />
+                )}
+              </button>
+              <ul
+                id="dropdown-Property"
+                className={`py-2 space-y-2 ${dropdownPropertyOpen ? 'block' : 'hidden'}`}
+              >
+                <li>
+                  <a
+                    href="/Admin/PGData"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     PG
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/BuyData"
-                  className={router.pathname === "/Admin/BuyData" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/BuyData"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Buy
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/RentData"
-                  className={router.pathname === "/Admin/RentData" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/RentData"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Rent
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/HotelData"
-                  className={router.pathname === "/Admin/HotelData" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/HotelData"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Hotel
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/Banqueethall"
-                  className={router.pathname === "/Admin/Banqueethall" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Banqueet Hall
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/Resort"
-                  className={router.pathname === "/Admin/Resort" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/PGDaBanqueethall"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    Banqueethall
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/Resort"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Resort
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/laundry"
-                  className={router.pathname === "/Admin/laundry" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+               
+              </ul>
+            </li>
+            <li>
+              <a
+                href="/Admin/Propertyenquiry"
+                className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <RiHomeSmileFill  className="w-6 h-6 text-gray-400 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                <span className="ml-3">Property Enquiry</span>
+              </a>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                onClick={togglelaundryDropdown}
+              >
+                <MdOutlineLocalLaundryService className="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
+                <span className="flex-1 ml-3 text-left whitespace-nowrap">Arene Laundry</span>
+                {dropdownlaundryOpen ? (
+                  <MdArrowDropUp className="w-6 h-6" />
+                ) : (
+                  <MdArrowDropDown className="w-6 h-6" />
+                )}
+              </button>
+              <ul
+                id="dropdown-laundry"
+                className={`py-2 space-y-2 ${dropdownlaundryOpen ? 'block' : 'hidden'}`}
+              >
+                <li>
+                  <a
+                    href="/Admin/laundry"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Laundry
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/CloudKitchen"
-                  className={router.pathname === "/Admin/CloudKitchen" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Arene Chef
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/arenecheforder"
-                  className={router.pathname === "/Admin/arenecheforder" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Arene Chef Order
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/Admin/arenelaundryorder"
-                  className={router.pathname === "/Admin/arenelaundryorder" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/arenelaundryorder"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
                     Arene Laundry Order
-                  </span>
-                </a>
-              </li>
-              
-              <li>
-                <a
-                  href="/Admin/Enquiry"
-                  className={router.pathname === "/Admin/Enquiry" ? "text-red-600" : "relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-red-600 pr-6"}
-                >
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Enquiry
-                  </span>
-                </a>
-              </li>
-             
-
-              <li>
-                <button  class="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-black hover:text-black border-l-4 border-transparent hover:border-indigo-500 pr-6">
-                  <span class="inline-flex justify-center items-center ml-4">
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      ></path>
-                    </svg>
-                  </span>
-                  <span class="ml-2 text-sm tracking-wide truncate">
-                    Logout
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                onClick={togglechefDropdown}
+              >
+                <SiCodechef  className="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
+                <span className="flex-1 ml-3 text-left whitespace-nowrap">Arene Chef</span>
+                {dropdownchefOpen ? (
+                  <MdArrowDropUp className="w-6 h-6" />
+                ) : (
+                  <MdArrowDropDown className="w-6 h-6" />
+                )}
+              </button>
+              <ul
+                id="dropdown-chef"
+                className={`py-2 space-y-2 ${dropdownchefOpen ? 'block' : 'hidden'}`}
+              >
+                <li>
+                  <a
+                    href="/Admin/CloudKitchen"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    Chef
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/arenecheforder"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    Arene Chef Order
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex items-center p-2 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                onClick={toggleothersDropdown}
+              >
+                <BsMenuDown  className="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" />
+                <span className="flex-1 ml-3 text-left whitespace-nowrap">Others</span>
+                {dropdownothersOpen ? (
+                  <MdArrowDropUp className="w-6 h-6" />
+                ) : (
+                  <MdArrowDropDown className="w-6 h-6" />
+                )}
+              </button>
+              <ul
+                id="dropdown-others"
+                className={`py-2 space-y-2 ${dropdownothersOpen ? 'block' : 'hidden'}`}
+              >
+                <li>
+                  <a
+                    href="/Admin/CoupanCode"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                  Coupon Code
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/Admin/Enquiry"
+                    className="flex items-center p-2 pl-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                   Enquiry
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <BiLogOutCircle className="w-6 h-6 text-gray-400 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                <span className="ml-3">Logout</span>
+              </a>
+            </li>
+          </ul>
         </div>
-      </div>
-      <ToastContainer/>
+      </aside>
     </div>
   );
-}
+};
+
+export default AdminNavbar;

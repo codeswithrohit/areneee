@@ -211,8 +211,8 @@ const PropertiesByCities = () => {
                       interval={3000} // Time interval between slides (in milliseconds)
                     >
                       {item.imgSrc.map((src, index) => (
-                        <div key={index} className="w-full h-full">
-                          <img src={src} alt="image" className="w-full h-full object-cover" />
+                        <div key={index} className="w-full h-64">
+                          <img src={src} alt="image" className="w-full h-64 object-cover" />
                         </div>
                       ))}
                     </Carousel>
