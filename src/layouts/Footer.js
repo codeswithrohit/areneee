@@ -5,7 +5,7 @@ const Footer = () => {
     <div>
           <footer class="bg-gradient-to-r from-emerald-900 via-emerald-500 to-emerald-900 py-10 px-10 font-sans tracking-wide">
       <div class="max-w-2xl mx-auto text-center">
-        <a href='/' class="inline-block"><img src="https://www.areneservices.in/public/front/images/property-logo.png" alt="logo"
+        <a href='/' class="inline-block"><img src="icon.png" alt="logo"
           class='w-24' /></a>
         <p class="text-sm mt-8 text-gray-200 font-mono">Welcome to Arene Services, your premier destination for all your property needs without any brokerage hassles. We specialize in providing top-notch services in PG accommodations, buying, renting, and selling properties, managing hotels, banquet halls, resorts, and laundry facilities.</p>
 

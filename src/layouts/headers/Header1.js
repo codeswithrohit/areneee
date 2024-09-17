@@ -87,7 +87,7 @@ const Header1 = () => {
  
 >
   <img
-    src="https://www.areneservices.in/public/front/images/property-logo.png"
+    src="icon.png"
     alt="Brand Logo"
   />
 </a>
